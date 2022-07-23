@@ -1,7 +1,12 @@
 ## 0.1 Table of Contents<a class="anchor" id="0.1"></a>
 1. [Quick Introduction to Boosting (What is Boosting?)](#1)
-    - 1.1 [About the Dataset](#1.1)
-2. [Data Exploration](#2)
+    - 1.1 [Gradient Boosting Machine (GBM)](#1.1)
+    - 1.2 [What is boosting?](#1.2)
+    - 1.3 [Improvements to Basic Gradient Boosting](#1.3)
+    - 1.4 [Summary](#1.4)
+    - 1.5 [Maths Intuition (Regression)](#1.5)
+    - 1.6 [Maths Intuition (Classification)](#1.6)
+2. [XGBM (Extreme Gradient Boosting Machine)](#2)
     - 2.1 [Missing Values](#2.1)
 3. [Exploratory Data Analysis](#3)
     - 3.1 [Outlier Detection](#3.1)
@@ -47,7 +52,10 @@ I’m thinking of an average of the predictions from these models. By doing this
 That’s primarily the idea behind ensemble learning. And where does boosting come in?
 
 Boosting is one of the techniques that uses the concept of ensemble learning. A boosting algorithm combines multiple simple models (also known as weak learners or base estimators) to generate the final output.
-## 1. Gradient Boosting Machine (GBM)
+## 1.1 Gradient Boosting Machine (GBM)<a class="anchor" id="1.1"></a>
+
+[Table of Content](#0.1)
+
 A Gradient Boosting Machine or GBM combines the predictions from multiple decision trees to generate the final predictions. Keep in mind that all the weak learners in a gradient boosting machine are decision trees.
 
 But if we are using the same algorithm, then how is using a hundred decision trees better than using a single decision tree? How do different decision trees capture different signals/information from the data?
@@ -59,12 +67,13 @@ Here is the trick – the nodes in every decision tree take a different subset o
 Additionally, each new tree takes into account the errors or mistakes made by the previous trees. So, every successive decision tree is built on the errors of the previous trees. This is how the trees in a gradient boosting machine algorithm are built sequentially.
 ![image](https://user-images.githubusercontent.com/99672298/180591175-9472eed5-f0f1-4fb7-9dce-0b06bee28f12.png)\
 We already know that errors play a major role in any machine learning algorithm. There are mainly two types of error, bias error and variance error. Gradient boost algorithm helps us minimize bias error of the model.
+
 ### The first realization of boosting that saw great success in application was Adaptive Boosting or AdaBoost for short.
 AdaBoost Algorithm which is again a boosting method. The weak learners in AdaBoost are decision trees with a single split, called decision stumps for their shortness. This algorithm starts by building a decision stump and then assigning equal weights to all the data points. Then it increases the weights for all the points which are misclassified and lowers the weight for those that are easy to classify or are correctly classified. A new decision stump is made for these weighted data points. The idea behind this is to improve the predictions made by the first stump. New weak learners are added sequentially that focus their training on the more difficult patterns.The main difference between these two algorithms is that Gradient boosting has a fixed base estimator i.e., Decision Trees whereas in AdaBoost we can change the base estimator according to our needs.
 
 Gradient Boosting trains many models in a gradual, additive and sequential manner. The major difference between AdaBoost and Gradient Boosting Algorithm is how the two algorithms identify the shortcomings of weak learners (eg. decision trees). While the AdaBoost model identifies the shortcomings by using high weight data points, gradient boosting performs the same by using gradients in the loss function
 
-## What is boosting?
+## 1.2 What is boosting?<a class="anchor" id="1.2"></a>
 While studying machine learning you must have come across this term called Boosting. The principle behind boosting algorithms is first we built a model on the training dataset, then a second model is built to rectify the errors present in the first model. Let me try to explain to you what exactly does this means and how does this works.
 ![image](https://user-images.githubusercontent.com/99672298/180592033-ba34e5cd-e22c-4a6b-a4b6-3588662a0cfb.png)\
 Suppose you have n data points and 2 output classes (0 and 1). You want to create a model to detect the class of the test data. Now what we do is randomly select observations from the training dataset and feed them to model 1 (M1), we also assume that initially, all the observations have an equal weight that means an equal probability of getting selected.
@@ -75,7 +84,98 @@ Since M1 is a weak learner, it will surely misclassify some of the observations.
 
 Similarly, it happens with M2, the wrongly classified weights are again updated and then fed to M3. This procedure is continued until and unless the errors are minimized, and the dataset is predicted correctly. Now when the new datapoint comes in (Test data) it passes through all the models (weak learners) and the class which gets the highest vote is the output for our test data.
 
-### Understand Gradient Boosting Algorithm with example (Regression)
+## 1.3 Improvements to Basic Gradient Boosting<a class="anchor" id="1.3"></a>
+### Gradient boosting is a greedy algorithm and can overfit a training dataset quickly.
+
+It can benefit from regularization methods that penalize various parts of the algorithm and generally improve the performance of the algorithm by reducing overfitting.
+
+In this this section we will look at 4 enhancements to basic gradient boosting:
+
++ Tree Constraints
++ Shrinkage
++ Random sampling
++ Penalized Learning
+
+1. Tree Constraints
+It is important that the weak learners have skill but remain weak.
+
+There are a number of ways that the trees can be constrained.
+
+A good general heuristic is that the more constrained tree creation is, the more trees you will need in the model, and the reverse, where less constrained individual trees, the fewer trees that will be required.
+
+Below are some constraints that can be imposed on the construction of decision trees:
+
+Number of trees, generally adding more trees to the model can be very slow to overfit. The advice is to keep adding trees until no further improvement is observed.
+Tree depth, deeper trees are more complex trees and shorter trees are preferred. Generally, better results are seen with 4-8 levels.
+Number of nodes or number of leaves, like depth, this can constrain the size of the tree, but is not constrained to a symmetrical structure if other constraints are used.
+Number of observations per split imposes a minimum constraint on the amount of training data at a training node before a split can be considered
+Minimim improvement to loss is a constraint on the improvement of any split added to a tree.
+
+2. Weighted Updates
+The predictions of each tree are added together sequentially.
+
+The contribution of each tree to this sum can be weighted to slow down the learning by the algorithm. This weighting is called a shrinkage or a learning rate.
+
+3. Stochastic Gradient Boosting
+A big insight into bagging ensembles and random forest was allowing trees to be greedily created from subsamples of the training dataset.
+
+This same benefit can be used to reduce the correlation between the trees in the sequence in gradient boosting models.
+
+This variation of boosting is called stochastic gradient boosting.A few variants of stochastic boosting that can be used:
+
++ Subsample rows before creating each tree.
++ Subsample columns before creating each tree
++ Subsample columns before considering each split.
+
+4. Penalized Gradient Boosting
+Additional constraints can be imposed on the parameterized trees in addition to their structure.
+
++ L1 regularization of weights.
++ L2 regularization of weights.
+
+## 1.4 Summary:<a class="anchor" id="1.4"></a>
+Gradient boosting involves three elements:
+
++ 1. A loss function to be optimized.
++ 2. A weak learner to make predictions.
++ 3. An additive model to add weak learners to minimize the loss function.
+
+1. Loss Function
+The loss function used depends on the type of problem being solved.
+
+It must be differentiable, but many standard loss functions are supported and you can define your own.
+
+For example, regression may use a squared error and classification may use logarithmic loss.
+
+2. Weak Learner
+Decision trees are used as the weak learner in gradient boosting.
+
+Specifically regression trees are used that output real values for splits and whose output can be added together, allowing subsequent models outputs to be added and “correct” the residuals in the predictions.
+
+Trees are constructed in a greedy manner, choosing the best split points based on purity scores like Gini or to minimize the loss.
+
+Initially, such as in the case of AdaBoost, very short decision trees were used that only had a single split, called a decision stump. Larger trees can be used generally with 4-to-8 levels.
+
+It is common to constrain the weak learners in specific ways, such as a maximum number of layers, nodes, splits or leaf nodes.
+
+This is to ensure that the learners remain weak, but can still be constructed in a greedy manner.
+
+3. Additive Model
+Trees are added one at a time, and existing trees in the model are not changed.
+
+A gradient descent procedure is used to minimize the loss when adding trees.
+
+Traditionally, gradient descent is used to minimize a set of parameters, such as the coefficients in a regression equation or weights in a neural network. After calculating error or loss, the weights are updated to minimize that error.
+
+Instead of parameters, we have weak learner sub-models or more specifically decision trees. After calculating the loss, to perform the gradient descent procedure, we must add a tree to the model that reduces the loss (i.e. follow the gradient). We do this by parameterizing the tree, then modify the parameters of the tree and move in the right direction by (reducing the residual loss.
+
+The output for the new tree is then added to the output of the existing sequence of trees in an effort to correct or improve the final output of the model.
+
+A fixed number of trees are added or training stops once loss reaches an acceptable level or no longer improves on an external validation dataset.
+
+[Table of Content](#0.1)
+## Maths Intuition
+### 1.5 Understand Gradient Boosting Algorithm with example (Regression)<a class="anchor" id="1.5"></a>
 Let’s understand the intuition behind Gradient boosting with the help of an example. Here our target column is continuous hence we will use Gradient Boosting Regressor.
 
 Following is a sample from a random dataset where we have to predict the car price based on various features. The target column is price and other features are independent features.
@@ -195,7 +295,9 @@ Let’s calculate the new prediction now:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592852-56692fcf-636a-41d1-aaee-0f16474df415.png)
 
-### Gradient Boosting Classifier
+[Table of Content](#0.1)
+## Maths Intuition
+### 1.6 Gradient Boosting Classifier<a class="anchor" id="1.6"></a>
 What is Gradient Boosting Classifier?
 A gradient boosting classifier is used when the target column is binary. All the steps explained in the Gradient boosting regressor are used here, the only difference is we change the loss function. Earlier we used Mean squared error when the target column was continuous but this time, we will use log-likelihood as our loss function.
 
@@ -304,5 +406,5 @@ Now when we have our first decision tree, we find the final output of the leaves
 
 Finally, we are ready to get new predictions by adding our base model with the new tree we made on residuals.
 _______________________________________________________________________________________________________________________________________________________________
-
+[Table of Content](#0.1)
 
