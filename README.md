@@ -43,9 +43,9 @@ Let’s understand the intuition behind Gradient boosting with the help of an ex
 Following is a sample from a random dataset where we have to predict the car price based on various features. The target column is price and other features are independent features.
 
 ![image](https://user-images.githubusercontent.com/99672298/180592447-05d51d72-bd76-40b2-850f-da745d8e0e75.png)\
-
+_______________________________________________________________________________________________________________________________________________________________
 #### Step -1 The first step in gradient boosting is to build a base model to predict the observations in the training dataset. For simplicity we take an average of the target column and assume that to be the predicted value as shown below:
-
+_______________________________________________________________________________________________________________________________________________________________
 ![image](https://user-images.githubusercontent.com/99672298/180592468-df49c744-2394-4254-b90f-63809377f4fb.png)
 
 Looking at this may give you a headache, but don’t worry we will try to understand what is written here.
@@ -79,7 +79,9 @@ We end up over an average of the observed car price and this is why I asked you 
 
 Hence for gamma=14500, the loss function will be minimum so this value will become our prediction for the base model.
 ![image](https://user-images.githubusercontent.com/99672298/180592508-eb40a933-f93a-401c-b225-fe751fd84807.png)
+_______________________________________________________________________________________________________________________________________________________________
 #### Step-2 The next step is to calculate the pseudo residuals which are (observed value – predicted value)
+_______________________________________________________________________________________________________________________________________________________________
 
 Again the question comes why only observed – predicted? Everything is mathematically proved, let’s from where did this formula come from. This step can be written as:
 
@@ -95,7 +97,9 @@ The predicted value here is the prediction made by the previous model. In our ex
 In the next step, we will build a model on these pseudo residuals and make predictions. Why do we do this? Because we want to minimize these residuals and minimizing the residuals will eventually improve our model accuracy and prediction power. So, using the Residual as target and the original feature Cylinder number, cylinder height, and Engine location we will generate new predictions. Note that the predictions, in this case, will be the error values, not the predicted car price values since our target column is an error now.
 
 Let’s say hm(x) is our DT made on these residuals.
-#### Step- 4 In this step we find the output values for each leaf of our decision tree. That means there might be a case where 1 leaf gets more than 1 residual, hence we need to find the final output of all the leaves. TO find the output we can simply take the average of all the numbers in a leaf, doesn’t matter if there is only 1 number or more than 1.\
+_______________________________________________________________________________________________________________________________________________________________
+#### Step- 3 In this step we find the output values for each leaf of our decision tree. That means there might be a case where 1 leaf gets more than 1 residual, hence we need to find the final output of all the leaves. TO find the output we can simply take the average of all the numbers in a leaf, doesn’t matter if there is only 1 number or more than 1.\
+_______________________________________________________________________________________________________________________________________________________________
 Let’s see why do we take the average of all the numbers. Mathematically this step can be represented as:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592730-8c4444e7-79e1-4f5f-a5b6-22e04c6c0a41.png)
@@ -131,8 +135,10 @@ We end up with the average of the residuals in the leaf R2,1 . Hence if we get a
 Now after calculating the output of all the leaves, we get:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592833-a5b59e63-bd97-4da3-8b41-2d76155690d7.png)
+_______________________________________________________________________________________________________________________________________________________________
+#### Step-4 This is finally the last step where we have to update the predictions of the previous model. It can be updated as:
+_______________________________________________________________________________________________________________________________________________________________
 
-#### Step-5 This is finally the last step where we have to update the predictions of the previous model. It can be updated as:
 ![image](https://user-images.githubusercontent.com/99672298/180592838-6d150e8f-9cd1-4b1c-a9b7-defced68e81b.png)
 
 where m is the number of decision trees made.
@@ -155,8 +161,14 @@ Let’s calculate the new prediction now:
 What is Gradient Boosting Classifier?
 A gradient boosting classifier is used when the target column is binary. All the steps explained in the Gradient boosting regressor are used here, the only difference is we change the loss function. Earlier we used Mean squared error when the target column was continuous but this time, we will use log-likelihood as our loss function.
 
+![image](https://user-images.githubusercontent.com/99672298/180600358-32739748-9481-4bfd-bba3-7e58dc86f6eb.png)
+
 Let’s see how this loss function works,
 The first step is creating an initial constant prediction value F₀. L is the loss function and we are using log loss (or more generally called cross-entropy loss) for it.
+_______________________________________________________________________________________________________________________________________________________________
+### Step 1
+_______________________________________________________________________________________________________________________________________________________________
+![image](https://user-images.githubusercontent.com/99672298/180600390-f0be5a77-4591-4c8b-8a1e-2f31009b59ad.png)
 
 ![image](https://user-images.githubusercontent.com/99672298/180598331-ffc05535-2648-43c4-bc9b-806142c2a406.png)
 
@@ -180,12 +192,62 @@ Let’s first transform this loss function so that it is a function of log(odds)
 
 ![image](https://user-images.githubusercontent.com/99672298/180598182-fa3f6c4b-05ba-40d8-b0d4-2ccce4dae77b.png)
 
+Now we might want to replace p in the above equation with something that is expressed in terms of log-odds. By transforming the log-odds expression shown earlier, p can be represented by log-odds:
+
+![image](https://user-images.githubusercontent.com/99672298/180598541-74d8e309-9fdc-4ebb-9849-716cda4754f2.png)
+
+Then, we are substituting this value for p in the previous L equation and simplying it.
+
+![image](https://user-images.githubusercontent.com/99672298/180599089-9e0ddfc0-8f5b-4861-b1be-8bd58d736d01.png)
+
 Now this is our loss function, and we need to minimize it, for this, we take the derivative of this w.r.t to log(odds) and then put it equal to 0,
+
+![image](https://user-images.githubusercontent.com/99672298/180600153-6b966f24-22b0-4eb3-89bb-9af03278c1bf.png)\
+
+In the equations above, we replaced the fraction containing log-odds with p to simplify the equation. Next, we are setting ∂ΣL/∂log(odds) equal to 0 and solving it for p.
+
+![image](https://user-images.githubusercontent.com/99672298/180600167-184bf77d-82b5-4fa2-a56b-1b45ed99f8c0.png)
+
+In this binary classification problem, y is either 0 or 1. So, the mean of y is actually the proportion of class 1. You might now see why we used p = mean(y) for our initial prediction.
+
+As γ is log-odds instead of probability p, we are converting it into log-odds.
+
+![image](https://user-images.githubusercontent.com/99672298/180600342-5b65fb23-a0de-43cf-9786-2bffe3cd5232.png)
+_______________________________________________________________________________________________________________________________________________________________
+### Step2
+_______________________________________________________________________________________________________________________________________________________________
+
+![image](https://user-images.githubusercontent.com/99672298/180600786-92aa4e79-b132-4408-9caa-125175bb7051.png)
+
+The whole step2 processes from 2–1 to 2–4 are iterated M times. M denotes the number of trees we are creating and the small m represents the index of each tree.
+_______________________________________________________________________________________________________________________________________________________________
+#### Step2-1
+_______________________________________________________________________________________________________________________________________________________________
+
+
+![image](https://user-images.githubusercontent.com/99672298/180600692-5b95f055-62d3-49d9-be58-220ba93165d6.png)
+
+We are calculating residuals rᵢ𝑚 by taking a derivative of the loss function with respect to the previous prediction F𝑚-₁ and multiplying it by −1. As you can see in the subscript index, rᵢ𝑚 is computed for each single sample i. Some of you might be wondering why we are calling this rᵢ𝑚 residuals. This value is actually negative gradient that gives us the directions (+/−) and the magnitude in which the loss function can be minimized. You will see why we are calling it residuals shortly. By the way, this technique where you use a gradient to minimize the loss on your model is very similar to gradient descent technique which is typically used to optimize neural networks. (In fact, they are slightly different from each other.
+
+Let’s compute the residuals here. F𝑚-₁ in the equation means the prediction from the previous step. In this first iteration, it is F₀. As in the previous step, we are taking a derivative of L with respect to log-odds instead of p since our prediction F𝑚 is log-odds. Below we are using L expressed by log-odds which we got in the previous step.
+
+![image](https://user-images.githubusercontent.com/99672298/180600756-026564dd-fe2c-4548-9885-5e4d21b90286.png)
+
+In the previous step, we also got this equation:
+
+![image](https://user-images.githubusercontent.com/99672298/180600760-bf137c5f-0e24-44c2-9dd7-eae2f8dd77d5.png)
+
+So, we can replace the second term in rᵢ𝑚 equation with p.
+
+![image](https://user-images.githubusercontent.com/99672298/180600767-9e79e9b5-42fc-49af-9a75-f45dc67b9417.png)
+
+You might now see why we call r residuals. This also gives us interesting insight that the negative gradient that provides us the direction and the magnitude to which the loss is minimized is actually just residuals.
+
+-----------------------------------------------------------------------------OR-----------------------------------------------------------------------------
 
 ![image](https://user-images.githubusercontent.com/99672298/180598190-6bf2c163-ad33-43ce-a07d-77e556163a21.png)
 
-Here y are the observed values
-
+Here y are the observed values\
 You must be wondering that why did we transform the loss function into the function of log(odds). Actually, sometimes it is easy to use the function of log(odds), and sometimes it’s easy to use the function of predicted probability “p”.
 
 It is not compulsory to transform the loss function, we did this just to have easy calculations.
@@ -201,5 +263,8 @@ After finding the residuals we can build a decision tree with all independent va
 Now when we have our first decision tree, we find the final output of the leaves because there might be a case where a leaf gets more than 1 residuals, so we need to calculate the final output value. 
 
 ![image](https://user-images.githubusercontent.com/99672298/180598211-b3ab87e1-f5b0-40af-80e4-4959b5a0f046.png)
+
+Finally, we are ready to get new predictions by adding our base model with the new tree we made on residuals.
+_______________________________________________________________________________________________________________________________________________________________
 
 
