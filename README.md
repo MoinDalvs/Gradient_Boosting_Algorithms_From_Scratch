@@ -1,4 +1,39 @@
-## Quick Introduction to Boosting (What is Boosting?)
+## 0.1 Table of Contents<a class="anchor" id="0.1"></a>
+1. [Quick Introduction to Boosting (What is Boosting?)](#1)
+    - 1.1 [About the Dataset](#1.1)
+2. [Data Exploration](#2)
+    - 2.1 [Missing Values](#2.1)
+3. [Exploratory Data Analysis](#3)
+    - 3.1 [Outlier Detection](#3.1)
+4. [Data Visualization](#4)
+5. [Data Pre-processing](#5)
+    - 5.1 [Standardizing the Data](#5.1)
+    - 5.2 [Normalizing the Data](#5.2)
+6. [KMeans Clustering](#6)
+    - 6.1 [Elbow Method for Determining Cluster Amount on Standard Scaled Data](#6.1)
+    - 6.2 [Silhoutte Score](#6.2)
+    - 6.3 [Build KMeans Cluster algorithm using K=6 and Standard Scaler Applied Dataset](#6.3)
+    - 6.4 [Elbow Method and Silhouette Score on MinMaxScaler Applied Data](#6.4)
+    - 6.5 [Build KMeans Cluster algorithm using K=4 and MinMaxScaler Applied Dataset](#6.5)
+    - 6.6 [t-SNE Visualization](#6.6)
+    - 6.6 [UMAP Visualization](#6.6)
+7. [Hierarchical Clustering Algorithm](#7)
+    - 7.1 [Dendogram on MinMaxScaler Applied on Dataset](#7.1)
+    - 7.2 [Dendrogram on Standard Scaler Applied on Data](#7.2)
+    - 7.3 [PCA](#7.3)
+        - 7.3A [Running PCA of Standardized data](#7.3A)
+        - 7.3B [Silhouette Score method for PCA Standard Scaled Data](#7.3B)
+        - 7.3C [Run Hierarchical Clustering.(Agglomerative Clustering) on Standard Scaled Data](#7.3C)
+        - 7.3D [Running PCA of Normalized data](#7.3D)
+        - 7.3E [Silhouette Score method for PCA MinMax Scaled Data](#7.3E)
+        - 7.3F [Run Hierarchical Clustering.(Agglomerative Clustering) on MinMax Scaled Data](#7.3F)
+8. [DBSCAN - (Density Based Spatial Clustering of Applications with Noise)](#8)
+    - 8.1 [DBSCAN of Standard Scaled Data](#8.1)
+    - 8.2 [DBSCAN of MinMax Scaled Data](#8.2)
+9. [Conclusion](#9)
+
+
+## 1) Quick Introduction to Boosting (What is Boosting?)<a class="anchor" id="1"></a>
 ### Picture this scenario:
 
 You’ve built a linear regression model that gives you a decent 77% accuracy on the validation dataset. Next, you decide to expand your portfolio by building a k-Nearest Neighbour (KNN) model and a decision tree model on the same dataset. These models gave you an accuracy of 62% and 89% on the validation set respectively.
@@ -26,6 +61,9 @@ Additionally, each new tree takes into account the errors or mistakes made by th
 We already know that errors play a major role in any machine learning algorithm. There are mainly two types of error, bias error and variance error. Gradient boost algorithm helps us minimize bias error of the model.
 ### The first realization of boosting that saw great success in application was Adaptive Boosting or AdaBoost for short.
 AdaBoost Algorithm which is again a boosting method. The weak learners in AdaBoost are decision trees with a single split, called decision stumps for their shortness. This algorithm starts by building a decision stump and then assigning equal weights to all the data points. Then it increases the weights for all the points which are misclassified and lowers the weight for those that are easy to classify or are correctly classified. A new decision stump is made for these weighted data points. The idea behind this is to improve the predictions made by the first stump. New weak learners are added sequentially that focus their training on the more difficult patterns.The main difference between these two algorithms is that Gradient boosting has a fixed base estimator i.e., Decision Trees whereas in AdaBoost we can change the base estimator according to our needs.
+
+Gradient Boosting trains many models in a gradual, additive and sequential manner. The major difference between AdaBoost and Gradient Boosting Algorithm is how the two algorithms identify the shortcomings of weak learners (eg. decision trees). While the AdaBoost model identifies the shortcomings by using high weight data points, gradient boosting performs the same by using gradients in the loss function
+
 ## What is boosting?
 While studying machine learning you must have come across this term called Boosting. The principle behind boosting algorithms is first we built a model on the training dataset, then a second model is built to rectify the errors present in the first model. Let me try to explain to you what exactly does this means and how does this works.
 ![image](https://user-images.githubusercontent.com/99672298/180592033-ba34e5cd-e22c-4a6b-a4b6-3588662a0cfb.png)\
