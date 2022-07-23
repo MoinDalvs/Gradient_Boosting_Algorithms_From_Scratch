@@ -56,22 +56,33 @@ Boosting is one of the techniques that uses the concept of ensemble learning. A 
 
 [Table of Content](#0.1)
 
-A Gradient Boosting Machine or GBM combines the predictions from multiple decision trees to generate the final predictions. Keep in mind that all the weak learners in a gradient boosting machine are decision trees.
+A Gradient Boosting Machine or GBM is an ensemble machine learning algorithm that can be used for classification or regression predictive modeling problems, which combines the predictions from multiple decision trees to generate the final predictions. Keep in mind that all the weak learners in a gradient boosting machine are decision trees.
+
+The models that form the ensemble, also known as base learners, could be either from the same learning algorithm or different learning algorithms. Bagging and boosting are two widely used ensemble learners. Though these two techniques can be used with several statistical models, the most predominant usage has been with decision trees.
 
 But if we are using the same algorithm, then how is using a hundred decision trees better than using a single decision tree? How do different decision trees capture different signals/information from the data?
+#### Bagging
+While decision trees are one of the most easily interpretable models, they exhibit highly variable behavior. Consider a single training dataset that we randomly split into two parts. Now, let’s use each part to train a decision tree in order to obtain two models.
+
+When we fit both these models, they would yield different results. Decision trees are said to be associated with high variance due to this behavior. Bagging or boosting aggregation helps to reduce the variance in any learner. Several decision trees which are generated in parallel, form the base learners of bagging technique. Data sampled with replacement is fed to these learners for training. The final prediction is the averaged output from all the learners.
 
 Here is the trick – the nodes in every decision tree take a different subset of features for selecting the best split. This means that the individual trees aren’t all the same and hence they are able to capture different signals from the data.
 
 ![21 07 2022_12 45 18_REC](https://user-images.githubusercontent.com/99672298/180593714-ed5f2021-1aa2-4f30-861b-86af44fb1980.png)
 
-Additionally, each new tree takes into account the errors or mistakes made by the previous trees. So, every successive decision tree is built on the errors of the previous trees. This is how the trees in a gradient boosting machine algorithm are built sequentially.
+#### Boosting
+Additionaly in boosting, the trees are built sequentially such that each subsequent tree aims to reduce the errors of the previous tree. Each tree learns from its predecessors and updates the residual errors. Hence, the tree that grows next in the sequence will learn from an updated version of the residuals.
+
+The base learners in boosting are weak learners in which the bias is high, and the predictive power is just a tad better than random guessing. Each of these weak learners contributes some vital information for prediction, enabling the boosting technique to produce a strong learner by effectively combining these weak learners. As we already know that errors play a major role in any machine learning algorithm. There are mainly two types of error, bias error and variance error. The final strong  learner helps us minimize bring down both the bias and the variance.
+
+In contrast to bagging techniques like Random Forest, in which trees are grown to their maximum extent, boosting makes use of trees with fewer splits. Such small trees, which are not very deep, are highly interpretable. Parameters like the number of trees or iterations, the rate at which the gradient boosting learns, and the depth of the tree, could be optimally selected through validation techniques like k-fold cross validation. Having a large number of trees might lead to overfitting. So, it is necessary to carefully choose the stopping criteria for boosting.
+
 ![image](https://user-images.githubusercontent.com/99672298/180591175-9472eed5-f0f1-4fb7-9dce-0b06bee28f12.png)\
-We already know that errors play a major role in any machine learning algorithm. There are mainly two types of error, bias error and variance error. Gradient boost algorithm helps us minimize bias error of the model.
 
 ### The first realization of boosting that saw great success in application was Adaptive Boosting or AdaBoost for short.
 AdaBoost Algorithm which is again a boosting method. The weak learners in AdaBoost are decision trees with a single split, called decision stumps for their shortness. This algorithm starts by building a decision stump and then assigning equal weights to all the data points. Then it increases the weights for all the points which are misclassified and lowers the weight for those that are easy to classify or are correctly classified. A new decision stump is made for these weighted data points. The idea behind this is to improve the predictions made by the first stump. New weak learners are added sequentially that focus their training on the more difficult patterns.The main difference between these two algorithms is that Gradient boosting has a fixed base estimator i.e., Decision Trees whereas in AdaBoost we can change the base estimator according to our needs.
 
-Gradient Boosting trains many models in a gradual, additive and sequential manner. The major difference between AdaBoost and Gradient Boosting Algorithm is how the two algorithms identify the shortcomings of weak learners (eg. decision trees). While the AdaBoost model identifies the shortcomings by using high weight data points, gradient boosting performs the same by using gradients in the loss function
+Gradient Boosting trains many models in a gradual, additive and sequential manner. The major difference between AdaBoost and Gradient Boosting Algorithm is how the two algorithms identify the shortcomings of weak learners (eg. decision trees). Thus, like AdaBoost, Gradient Boost builds fixed sized trees based on the previous tree's errors, but unlike AdaBoost, each tree can be larger than a stump.In Contrast, Gradient Boost starts by making a single leaf, instead of a tree or a stump. While the AdaBoost model identifies the shortcomings by using high weight data points, gradient boosting performs the same by using gradients in the loss function
 
 ## 1.2 What is boosting?<a class="anchor" id="1.2"></a>
 While studying machine learning you must have come across this term called Boosting. The principle behind boosting algorithms is first we built a model on the training dataset, then a second model is built to rectify the errors present in the first model. Let me try to explain to you what exactly does this means and how does this works.
@@ -174,6 +185,18 @@ The output for the new tree is then added to the output of the existing sequence
 A fixed number of trees are added or training stops once loss reaches an acceptable level or no longer improves on an external validation dataset.
 
 [Table of Content](#0.1)
+## 2. Extreme Gradient Boosting Machine (XGBM)<a class="anchor" id="2"></a>
+Extreme Gradient Boosting or XGBoost is another popular boosting algorithm. In fact, XGBoost is simply an improvised version of the GBM algorithm! The working procedure of XGBoost is the same as GBM. The trees in XGBoost are built sequentially, trying to correct the errors of the previous trees.
+
+But there are certain features that make XGBoost slightly better than GBM:
+
++ One of the most important points is that XGBM implements parallel preprocessing (at the node level) which makes it faster than GBM
++ XGBoost also includes a variety of regularization techniques that reduce overfitting and improve overall performance. You can select the regularization technique by setting the hyperparameters of the XGBoost algorithm
++ Additionally, if you are using the XGBM algorithm, you don’t have to worry about imputing missing values in your dataset. The XGBM model can handle the missing values on its own. During the training process, the model learns whether missing values should be in the right or left node.
+
+
+
+[Table of Content](#0.1)
 ## Maths Intuition
 ### 1.5 Understand Gradient Boosting Algorithm with example (Regression)<a class="anchor" id="1.5"></a>
 Let’s understand the intuition behind Gradient boosting with the help of an example. Here our target column is continuous hence we will use Gradient Boosting Regressor.
@@ -220,6 +243,8 @@ Hence for gamma=14500, the loss function will be minimum so this value will beco
 _______________________________________________________________________________________________________________________________________________________________
 #### Step-2 The next step is to calculate the pseudo residuals which are (observed value – predicted value)
 _______________________________________________________________________________________________________________________________________________________________
+
+![20 07 2022_20 25 10_REC](https://user-images.githubusercontent.com/99672298/180602144-1cba6543-31a0-437f-b893-847962ac1744.png)
 
 Again the question comes why only observed – predicted? Everything is mathematically proved, let’s from where did this formula come from. This step can be written as:
 
