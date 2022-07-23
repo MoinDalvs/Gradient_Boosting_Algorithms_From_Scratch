@@ -41,7 +41,7 @@ Following is a sample from a random dataset where we have to predict the car pri
 
 ![image](https://user-images.githubusercontent.com/99672298/180592447-05d51d72-bd76-40b2-850f-da745d8e0e75.png)\
 
-+ Step -1 The first step in gradient boosting is to build a base model to predict the observations in the training dataset. For simplicity we take an average of the target column and assume that to be the predicted value as shown below:
+#### Step -1 The first step in gradient boosting is to build a base model to predict the observations in the training dataset. For simplicity we take an average of the target column and assume that to be the predicted value as shown below:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592468-df49c744-2394-4254-b90f-63809377f4fb.png)
 
@@ -75,9 +75,9 @@ plug values | Gradient Boosting Algorithm
 We end up over an average of the observed car price and this is why I asked you to take the average of the target column and assume it to be your first prediction.
 
 Hence for gamma=14500, the loss function will be minimum so this value will become our prediction for the base model.
-![image](https://user-images.githubusercontent.com/99672298/180592508-eb40a933-f93a-401c-b225-fe751fd84807.png)\
-+ Step-2 The next step is to calculate the pseudo residuals which are (observed value – predicted value)
-![image](https://user-images.githubusercontent.com/99672298/180592557-6acc1beb-8907-4353-af6f-8ddb627f0055.png)
+![image](https://user-images.githubusercontent.com/99672298/180592508-eb40a933-f93a-401c-b225-fe751fd84807.png)
+#### Step-2 The next step is to calculate the pseudo residuals which are (observed value – predicted value)
+
 Again the question comes why only observed – predicted? Everything is mathematically proved, let’s from where did this formula come from. This step can be written as:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592566-be077eb8-3843-4735-bf10-4269b26fd5e0.png)
@@ -87,11 +87,12 @@ Here F(xi) is the previous model and m is the number of DT made.
 The predicted value here is the prediction made by the previous model. In our example the prediction made by the previous model (initial base model prediction) is 14500, to calculate the residuals our formula becomes:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592632-e80350f1-b5f7-4239-99d3-1f69af26087d.png)
+![image](https://user-images.githubusercontent.com/99672298/180592557-6acc1beb-8907-4353-af6f-8ddb627f0055.png)
 
 In the next step, we will build a model on these pseudo residuals and make predictions. Why do we do this? Because we want to minimize these residuals and minimizing the residuals will eventually improve our model accuracy and prediction power. So, using the Residual as target and the original feature Cylinder number, cylinder height, and Engine location we will generate new predictions. Note that the predictions, in this case, will be the error values, not the predicted car price values since our target column is an error now.
 
 Let’s say hm(x) is our DT made on these residuals.
-+ Step- 4 In this step we find the output values for each leaf of our decision tree. That means there might be a case where 1 leaf gets more than 1 residual, hence we need to find the final output of all the leaves. TO find the output we can simply take the average of all the numbers in a leaf, doesn’t matter if there is only 1 number or more than 1.\
+#### Step- 4 In this step we find the output values for each leaf of our decision tree. That means there might be a case where 1 leaf gets more than 1 residual, hence we need to find the final output of all the leaves. TO find the output we can simply take the average of all the numbers in a leaf, doesn’t matter if there is only 1 number or more than 1.\
 Let’s see why do we take the average of all the numbers. Mathematically this step can be represented as:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592730-8c4444e7-79e1-4f5f-a5b6-22e04c6c0a41.png)
@@ -114,6 +115,37 @@ Now we need to find the value for gamma for which this function is minimum. So w
 
 ![image](https://user-images.githubusercontent.com/99672298/180592757-40d1952d-d41e-4801-8c75-7411fdcdd00e.png)
 
-Hence the leaf R1,1 has an output value of -2500. Now let’s solve for the R2,1This article was published as a part of the Data Science Blogathon
+Hence the leaf R1,1 has an output value of -2500. Now let’s solve for the R2,1
 
- 
+![image](https://user-images.githubusercontent.com/99672298/180592813-221232e1-55c8-416c-9e55-cc7231d01ae8.png)
+
+Let’s take the derivative to get the minimum value of gamma for which this function is minimum:
+
+![image](https://user-images.githubusercontent.com/99672298/180592825-83b97463-e9d2-4a92-8009-51139455f696.png)
+
+We end up with the average of the residuals in the leaf R2,1 . Hence if we get any leaf with more than 1 residual, we can simply find the average of that leaf and that will be our final output.
+
+Now after calculating the output of all the leaves, we get:
+
+![image](https://user-images.githubusercontent.com/99672298/180592833-a5b59e63-bd97-4da3-8b41-2d76155690d7.png)
+
+#### Step-5 This is finally the last step where we have to update the predictions of the previous model. It can be updated as:
+![image](https://user-images.githubusercontent.com/99672298/180592838-6d150e8f-9cd1-4b1c-a9b7-defced68e81b.png)
+
+where m is the number of decision trees made.
+
+Since we have just started building our model so our m=1. Now to make a new DT our new predictions will be:
+
+![image](https://user-images.githubusercontent.com/99672298/180592844-6b95fe59-f048-49f7-8ff9-3bb64b6fa3d9.png)
+
+Here Fm-1(x) is the prediction of the base model (previous prediction) since F1-1=0 , F0 is our base model hence the previous prediction is 14500.
+
+nu is the learning rate that is usually selected between 0-1. It reduces the effect each tree has on the final prediction, and this improves accuracy in the long run. Let’s take nu=0.1 in this example.
+
+Hm(x) is the recent DT made on the residuals.
+
+Let’s calculate the new prediction now:
+
+![image](https://user-images.githubusercontent.com/99672298/180592852-56692fcf-636a-41d1-aaee-0f16474df415.png)
+
+
