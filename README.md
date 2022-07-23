@@ -151,4 +151,55 @@ Let’s calculate the new prediction now:
 
 ![image](https://user-images.githubusercontent.com/99672298/180592852-56692fcf-636a-41d1-aaee-0f16474df415.png)
 
+### Gradient Boosting Classifier
+What is Gradient Boosting Classifier?
+A gradient boosting classifier is used when the target column is binary. All the steps explained in the Gradient boosting regressor are used here, the only difference is we change the loss function. Earlier we used Mean squared error when the target column was continuous but this time, we will use log-likelihood as our loss function.
+
+Let’s see how this loss function works,
+The first step is creating an initial constant prediction value F₀. L is the loss function and we are using log loss (or more generally called cross-entropy loss) for it.
+
+![image](https://user-images.githubusercontent.com/99672298/180598331-ffc05535-2648-43c4-bc9b-806142c2a406.png)
+
+yᵢ is our classification target and it is either 0 or 1. p is the predicted probability of class 1. You might see L taking different values depending on the target class yᵢ.
+
+![image](https://user-images.githubusercontent.com/99672298/180598339-1f18ea4e-3c6a-4f91-9728-cad35b91faae.png)
+
+As −log(x) is the decreasing function of x, the better the prediction (i.e. increasing p for yᵢ=1), the smaller loss we will have.
+
+argmin means we are searching for the value γ (gamma) that minimizes ΣL(yᵢ,γ). While it is more straightforward to assume γ is the predicted probability p, we assume γ is log-odds as it makes all the following computations easier. For those who forgot the log-odds definition , it is defined as log(odds) = log(p/(1-p)).
+
+To be able to solve the argmin problem in terms of log-odds, we are transforming the loss function into the function of log-odds.
+
+Our first step in the gradient boosting algorithm was to initialize the model with some constant value, there we used the average of the target column but here we’ll use log(odds) to get that constant value. The question comes why log(odds)?
+
+When we differentiate this loss function, we will get a function of log(odds) and then we need to find a value of log(odds) for which the loss function is minimum.
+
+Confused right? Okay let’s see how it works:
+
+Let’s first transform this loss function so that it is a function of log(odds), I’ll tell you later why we did this transformation.
+
+![image](https://user-images.githubusercontent.com/99672298/180598182-fa3f6c4b-05ba-40d8-b0d4-2ccce4dae77b.png)
+
+Now this is our loss function, and we need to minimize it, for this, we take the derivative of this w.r.t to log(odds) and then put it equal to 0,
+
+![image](https://user-images.githubusercontent.com/99672298/180598190-6bf2c163-ad33-43ce-a07d-77e556163a21.png)
+
+Here y are the observed values
+
+You must be wondering that why did we transform the loss function into the function of log(odds). Actually, sometimes it is easy to use the function of log(odds), and sometimes it’s easy to use the function of predicted probability “p”.
+
+It is not compulsory to transform the loss function, we did this just to have easy calculations.
+
+Hence the minimum value of this loss function will be our first prediction (base model prediction)
+
+Now in the Gradient boosting regressor our next step was to calculate the pseudo residuals where we multiplied the derivative of the loss function with -1. We will do the same but now the loss function is different, and we are dealing with the probability of an outcome now.
+
+![image](https://user-images.githubusercontent.com/99672298/180598203-60423cee-c552-44f7-ae93-a1c057db4adb.png)
+
+After finding the residuals we can build a decision tree with all independent variables and target variables as “Residuals”.
+
+Now when we have our first decision tree, we find the final output of the leaves because there might be a case where a leaf gets more than 1 residuals, so we need to calculate the final output value. 
+
+![image](https://user-images.githubusercontent.com/99672298/180598211-b3ab87e1-f5b0-40af-80e4-4959b5a0f046.png)
+
 
