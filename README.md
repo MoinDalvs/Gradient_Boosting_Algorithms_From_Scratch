@@ -56,7 +56,7 @@ Boosting is one of the techniques that uses the concept of ensemble learning. A 
 
 [Table of Content](#0.1)
 
-A Gradient Boosting Machine or GBM is an ensemble machine learning algorithm that can be used for classification or regression predictive modeling problems, which combines the predictions from multiple decision trees to generate the final predictions. Keep in mind that all the weak learners in a gradient boosting machine are decision trees.
+A Gradient Boosting Machine or GBM is an ensemble machine learning algorithm that can be used for classification or regression predictive modeling problems, which combines the predictions from multiple decision trees to generate the final predictions. Keep in mind that all the weak learners in a gradient boosting machine are decision trees. The main objective of Gradient Boost is to minimize the loss function by adding weak learners using a gradient descent optimization algorithm. The generalization allowed arbitrary differentiable loss functions to be used, expanding the technique beyond binary classification problems to support regression, multi-class classification, and more.
 
 The models that form the ensemble, also known as base learners, could be either from the same learning algorithm or different learning algorithms. Bagging and boosting are two widely used ensemble learners. Though these two techniques can be used with several statistical models, the most predominant usage has been with decision trees.
 
@@ -82,10 +82,25 @@ In contrast to bagging techniques like Random Forest, in which trees are grown t
 ### The first realization of boosting that saw great success in application was Adaptive Boosting or AdaBoost for short.
 AdaBoost Algorithm which is again a boosting method. The weak learners in AdaBoost are decision trees with a single split, called decision stumps for their shortness. This algorithm starts by building a decision stump and then assigning equal weights to all the data points. Then it increases the weights for all the points which are misclassified and lowers the weight for those that are easy to classify or are correctly classified. A new decision stump is made for these weighted data points. The idea behind this is to improve the predictions made by the first stump. New weak learners are added sequentially that focus their training on the more difficult patterns.The main difference between these two algorithms is that Gradient boosting has a fixed base estimator i.e., Decision Trees whereas in AdaBoost we can change the base estimator according to our needs.
 
+AdaBoost uses multiple iterations to generate a single composite strong learner. It creates a strong learner by iteratively adding weak learners. During each phase of training, a new weak learner is added to the ensemble, and a weighting vector is adjusted to focus on examples that were misclassified in previous rounds. The result is a classifier that has higher accuracy than the weak learner classifiers.
+
+![image](https://user-images.githubusercontent.com/99672298/180611411-faf62bc8-9795-444d-85f4-3a6ffab8cec8.png)
+
 Gradient Boosting trains many models in a gradual, additive and sequential manner. The major difference between AdaBoost and Gradient Boosting Algorithm is how the two algorithms identify the shortcomings of weak learners (eg. decision trees). Thus, like AdaBoost, Gradient Boost builds fixed sized trees based on the previous tree's errors, but unlike AdaBoost, each tree can be larger than a stump.In Contrast, Gradient Boost starts by making a single leaf, instead of a tree or a stump. While the AdaBoost model identifies the shortcomings by using high weight data points, gradient boosting performs the same by using gradients in the loss function
 
 ## 1.2 What is boosting?<a class="anchor" id="1.2"></a>
-While studying machine learning you must have come across this term called Boosting. The principle behind boosting algorithms is first we built a model on the training dataset, then a second model is built to rectify the errors present in the first model. Let me try to explain to you what exactly does this means and how does this works.
+
+While studying machine learning you must have come across this term called Boosting. Boosting is an ensemble learning technique to build a strong classifier from several weak classifiers in series. Boosting algorithms play a crucial role in dealing with bias-variance trade-offs. Unlike bagging algorithms, which only control for high variance in a model, boosting controls both the aspects (bias & variance) and is considered to be more effective.
+
+Below are the few types of boosting algorithms:
+
+1. AdaBoost (Adaptive Boosting)
+2. Gradient Boosting
+3. XGBoost
+4. CATBoost
+5. Light GBM
+
+The principle behind boosting algorithms is first we built a model on the training dataset, then a second model is built to rectify the errors present in the first model. Let me try to explain to you what exactly does this means and how does this works.
 ![image](https://user-images.githubusercontent.com/99672298/180592033-ba34e5cd-e22c-4a6b-a4b6-3588662a0cfb.png)\
 Suppose you have n data points and 2 output classes (0 and 1). You want to create a model to detect the class of the test data. Now what we do is randomly select observations from the training dataset and feed them to model 1 (M1), we also assume that initially, all the observations have an equal weight that means an equal probability of getting selected.
 
@@ -144,6 +159,12 @@ Additional constraints can be imposed on the parameterized trees in addition to 
 + L1 regularization of weights.
 + L2 regularization of weights.
 
+#### Gradient boosting is a greedy algorithm and can overfit a training dataset quickly. So regularization methods are used to improve the performance of the algorithm by reducing overfitting.
+
++ **Subsampling:** This is the simplest form of regularization method introduced for GBM’s. This improves the generalization properties of the model and reduces the computation efforts. Subsampling introduces randomness into the fitting procedure. At each learning iteration, only a random part of the training data is used to fit a consecutive base-learner. The training data is sampled without replacement.
++ **Shrinkage:** Shrinkage is commonly used in ridge regression where it shrinks regression coefficients to zero and, thus, reduces the impact of potentially unstable regression coefficients. In GBM’s, shrinkage is used for reducing the impact of each additionally fitted base-learner. It reduces the size of incremental steps and thus penalizes the importance of each consecutive iteration. The intuition behind this technique is that it is better to improve a model by taking many small steps than by taking fewer large steps. If one of the boosting iterations turns out to be erroneous, its negative impact can be corrected easily in subsequent steps.
++ **Early Stopping:** One important practical consideration that can be derived from Decision Tree is early stopping or tree pruning. This means that if the ensemble was trimmed by the number of trees, corresponding to the validation set minima on the error curve, the overfitting would be circumvented at the minimal accuracy expense. Another observation is that the optimal number of boosts, at which the early stopping is considered, varies concerning the shrinkage parameter λ. Therefore, a trade-off between the number of boosts and λ should be considered.
+
 ## 1.4 Summary:<a class="anchor" id="1.4"></a>
 Gradient boosting involves three elements:
 
@@ -186,13 +207,51 @@ A fixed number of trees are added or training stops once loss reaches an accepta
 
 [Table of Content](#0.1)
 ## 2. Extreme Gradient Boosting Machine (XGBM)<a class="anchor" id="2"></a>
-Extreme Gradient Boosting or XGBoost is another popular boosting algorithm. In fact, XGBoost is simply an improvised version of the GBM algorithm! The working procedure of XGBoost is the same as GBM. The trees in XGBoost are built sequentially, trying to correct the errors of the previous trees.
 
-But there are certain features that make XGBoost slightly better than GBM:
+![image](https://user-images.githubusercontent.com/99672298/180611820-2137c89b-1484-418d-bde8-7818814751a2.png)
 
-+ One of the most important points is that XGBM implements parallel preprocessing (at the node level) which makes it faster than GBM
+XGBoost is an extension to gradient boosted decision trees (GBM) and specially designed to improve speed and performance. In fact, XGBoost is simply an improvised version of the GBM algorithm! The working procedure of XGBoost is the same as GBM. `Regularized Learning`, `Gradient Tree Boosting` and `Shrinkage and Column Subsampling`. The trees in XGBoost are built sequentially, trying to correct the errors of the previous trees.
+
+#### XGBoost Features
++ **Regularized Learning:** The regularization term helps to smooth the final learned weights to avoid over-fitting. The regularized objective will tend to select a model employing simple and predictive functions.
+Gradient Tree Boosting: The tree ensemble model cannot be optimized using traditional optimization methods in Euclidean space. Instead, the model is trained in an additive manner.
++ **Shrinkage and Column Subsampling:** Besides the regularized objective, two additional techniques are used to further prevent overfitting. The first technique is shrinkage introduced by Friedman. Shrinkage scales newly added weights by a factor η after each step of tree boosting. Similar to a learning rate in stochastic optimization, shrinkage reduces the influence of each tree and leaves space for future trees to improve the model.
++ The second technique is the column (feature) subsampling. This technique is used in Random Forest. Column sub-sampling prevents over-fitting even more so than the traditional row sub-sampling. The usage of column sub-samples also speeds up computations of the parallel algorithm.
+
+#### But there are certain features that make XGBoost slightly better than GBM:
+
++ One of the most important points is that XGBM implements parallel preprocessing (at the node level) which makes it faster than GBM and that means using Parallel learning to split up the dataset so that multiple computers can work on it at the same time.
 + XGBoost also includes a variety of regularization techniques that reduce overfitting and improve overall performance. You can select the regularization technique by setting the hyperparameters of the XGBoost algorithm
 + Additionally, if you are using the XGBM algorithm, you don’t have to worry about imputing missing values in your dataset. The XGBM model can handle the missing values on its own. During the training process, the model learns whether missing values should be in the right or left node.
+
+#### In other words, the first three parts give us a conceptual idea of How XGBoost is fit to training data and how it makes predictions
+and the other parts we are going to discuss are going to describe optimization techniques for large datasets
+![22 07 2022_16 05 44_REC](https://user-images.githubusercontent.com/99672298/180612232-b6f1e813-5f3e-4632-b3ad-c055d0e0b137.png)
+
+#### XGBM Optimizations:
++ **Exact Greedy Algorithm:** The main problem in tree learning is to find the best split. This algorithm enumerates all the possible splits on all the features. It is computationally demanding to enumerate all the possible splits for continuous features.
++ **Approximate Algorithm:** The exact greedy algorithm is very powerful since it enumerates overall possible splitting points greedily. However, it is impossible to efficiently do so when the data does not fit entirely into memory. Approximate Algorithm proposes candidate splitting points according to percentiles of feature distribution. The algorithm then maps the continuous features into buckets split by these candidate points, aggregates the statistics, and finds the best solution among proposals based on the aggregated statistics. So when we have huge training dataset, XGBoost uses an Approximate Greedy Algorithm.
+++ **Weighted Quantile Sketch:** One important step in the approximate algorithm is to propose candidate split points. XGBoost has a distributed weighted quantile sketch algorithm to effectively handle weighted data.
+Sparsity-aware Split Finding: In many real-world problems, it is quite common for the input x to be sparse. There are multiple possible causes for sparsity:
+Presence of missing values in the data
+Frequent zero entries in the statistics
+Artifacts of feature engineering such as one-hot encoding
+It is important to make the algorithm aware of the sparsity pattern in the data. XGBoost handles all sparsity patterns in a unified way.
+
+#### System Features
+The library provides a system for use in a range of computing environments, not least:
+
++ **Parallelization** of tree construction using all of your CPU cores during training.
++ **Distributed Computing** for training very large models using a cluster of machines.
++ **Out-of-Core Computing** for very large datasets that don’t fit into memory.
++ **Cache Optimization** of data structures and algorithm to make the best use of hardware.
+
+#### Algorithm Features
+The implementation of the algorithm was engineered for the efficiency of computing time and memory resources. A design goal was to make the best use of available resources to train the model. Some key algorithm implementation features include:
+
++ **Sparse Aware implementation** with automatic handling of missing data values.
++ **Block Structure** to support the parallelization of tree construction.
++ **Continued Training** so that you can further boost an already fitted model on new data.
 
 
 
