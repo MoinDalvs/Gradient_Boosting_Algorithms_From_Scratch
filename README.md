@@ -15,6 +15,14 @@
     - 2.6 [XGBoost Training Features](#2.6)
     - 2.7 [XGBoost Algorithm — Parameters](#2.7)
 3. [LightGBM](#3)
+    - 3.1 [What are split points?](#3.1)
+    - 3.2 [How are the optimum split points created?](#3.2)
+    - 3.3 [Structural Differences](#3.3)
+    - 3.4 [What is GOSS?](#3.4)
+    - 3.5 [What is EFB(Exclusive Feature Bundling)?](#3.1)
+    - 3.6 [Advantages of Light GBM](#3.6)
+    - 3.7 [Performance comparison](#3.7)
+    - 3.8 [Tuning Parameters of Light GBM](#3.8)
 4. [CatBoost](#4)
 
 ## 1) Quick Introduction to Boosting (What is Boosting?)<a class="anchor" id="1"></a>
@@ -576,6 +584,10 @@ ________________________________________________________________________________
 [Table of Content](#0.1)
 ## 3 Light Gradient Boosting Machine<a class="anchor" id="3"></a>
 
+![image](https://user-images.githubusercontent.com/99672298/180640882-5b68aa13-21ef-4ece-8f7b-82a8998a679c.png)
+
+
+LightGBM extends the gradient boosting algorithm by adding a type of automatic feature selection as well as focusing on boosting examples with larger gradients. This can result in a dramatic speedup of training and improved predictive performance.
 LightGBM is able to handle huge amounts of data with ease. But keep in mind that this algorithm does not perform well with a small number of data points.
 
 Let’s take a moment to understand why that’s the case.
@@ -589,3 +601,130 @@ Consider the example I’ve illustrated in the below image:
 After the first split, the left node had a higher loss and is selected for the next split. Now, we have three leaf nodes, and the middle leaf node had the highest loss. The leaf-wise split of the LightGBM algorithm enables it to work with large datasets.
 
 In order to speed up the training process, `LightGBM uses a histogram-based method for selecting the best split`. For any continuous variable, instead of using the individual values, these are divided into bins or buckets. This makes the training process faster and lowers memory usage.
+
+Light GBM is a fast, distributed, high-performance gradient boosting framework based on decision tree algorithm, used for ranking, classification and many other machine learning tasks.
+
+Since it is based on decision tree algorithms, it splits the tree leaf wise with the best fit whereas other boosting algorithms split the tree depth wise or level wise rather than leaf-wise. So when growing on the same leaf in Light GBM, the leaf-wise algorithm can reduce more loss than the level-wise algorithm and hence results in much better accuracy which can rarely be achieved by any of the existing boosting algorithms. Also, it is surprisingly very fast, hence the word ‘Light’.
+
+Before is a diagrammatic representation by the makers of the Light GBM to explain the difference clearly.
+
+#### Level-wise tree growth in XGBOOST.
+
+![image](https://user-images.githubusercontent.com/99672298/180640379-3fb4e9da-74e0-486e-9062-4d6ce20d7613.png)
+
+#### Leaf wise tree growth in Light GBM.
+
+![image](https://user-images.githubusercontent.com/99672298/180640390-abbe1e54-36ff-4112-a4b8-1b98d7691403.png)
+
+Leaf wise splits lead to increase in complexity and may lead to overfitting and it can be overcome by specifying another parameter max-depth which specifies the depth to which splitting will occur.
+
+The costliest operation is training the decision tree and the most time consuming task is to find the optimum split points.
+### 3.1 What are split points?<a class="anchor" id="3.1"></a>
+
+Split points are the feature values depending on which data is divided at a tree node. In the above example data division happens at node1 on Height ( 180 ) and at node 2 on Weight ( 80 ). The optimum splits are selected from a pool of candidate splits on the basis of information gain. In other words split points with maximum information gain are selected.
+
+### 3.2 How are the optimum split points created?<a class="anchor" id="3.2"></a>
+
+Split finding algorithms are used to find candidate splits.
+One of the most popular split finding algorithm is the Pre-sorted algorithm which enumerates all possible split points on pre-sorted values. This method is simple but highly inefficient in terms of computation power and memory .
+The second method is the Histogram based algorithm which buckets continuous features into discrete bins to construct feature histograms during training. It costs O(#data * #feature) for histogram building and O(#bin * #feature) for split point finding. As bin << data histogram building will dominate the computational complexity.
+
+![image](https://user-images.githubusercontent.com/99672298/180641741-f09e9643-010c-4df5-a0d6-658bc373500b.png)
+
+What makes LightGBM special?
+
+LightGBM aims to reduce complexity of histogram building ( O(data * feature) ) by down sampling data and feature using GOSS and EFB.
+What makes LightGBM different is that it uses a unique technique called Gradient-based One-Side Sampling (GOSS) to filter out the data instances to find a split value. This is different than XGBoost which uses pre-sorted and histogram-based algorithms to find the best split.
+
+![image](https://user-images.githubusercontent.com/99672298/180641782-8be3cf55-0e40-464a-b181-4236ab269e8d.png)
+
+### 3.3 Structural Differences<a class="anchor" id="3.3"></a>
+Structural Differences in LightGBM & XGBoost LightGBM uses a novel technique of Gradient-based One-Side Sampling (GOSS) to filter out the data instances for finding a split value while XGBoost uses pre-sorted algorithm & Histogram-based algorithm for computing the best split. Here instances mean observations/samples. First, let us understand how pre-sorting splitting works- For each node, enumerate over all features For each feature, sort the instances by feature value Use a linear scan to decide the best split along that feature basis information gain Take the best split solution along all the features In simple terms, Histogram-based algorithm splits all the data points for a feature into discrete bins and uses these bins to find the split value of histogram.
+While, it is efficient than pre-sorted algorithm in training speed which enumerates all possible split points on the pre-sorted feature values, it is still behind GOSS in terms of speed. So what makes this GOSS method efficient? In AdaBoost, the sample weight serves as a good indicator for the importance of samples. However, in Gradient Boosting Decision Tree (GBDT), there are no native sample weights, and thus the sampling methods proposed for AdaBoost cannot be directly applied. Here comes gradient-basedsampling. Gradient represents the slope of the tangent of the loss function, so logically if gradient of data points are large in some sense, these points are important for finding the optimal split point as they have higher error GOSS keeps all the instances with large gradients and performs random sampling on the instances with small gradients.
+
+For example, let’s say I have 500K rows of data where 10k rows have higher gradients. So my algorithm will choose (10k rows of higher gradient+ x% of remaining 490k rows chosen randomly).
+Assuming x is 10%, total rows selected are 59k out of 500K on the basis of which split value if found. The basic assumption taken here is that samples with training instances with small gradients have smaller training error and it is already well-trained. In order to keep the same data distribution, when computing the information gain, GOSS introduces a constant multiplier for the data instances with small gradients. Thus, GOSS achieves a good balance between reducing the number of data instances and keeping the accuracy for learned decision trees.
+
+### 3.4 What is GOSS?<a class="anchor" id="3.4"></a>
+
+Gradient-based One-Side Sampling, or GOSS for short, is a modification to the gradient boosting method that focuses attention on those training examples that result in a larger gradient, in turn speeding up learning and reducing the computational complexity of the method.
+
+GOSS is a novel sampling method which down samples the instances on basis of gradients. As we know instances with small gradients are well trained (small training error) and those with large gradients are under trained. A naive approach to downsample is to discard instances with small gradients by solely focussing on instances with large gradients but this would alter the data distribution. In a nutshell GOSS retains instances with large gradients while performing random sampling on instances with small gradients.
+
+With GOSS, we exclude a significant proportion of data instances with small gradients, and only use the rest to estimate the information gain. We prove that, since the data instances with larger gradients play a more important role in the computation of information gain, GOSS can obtain quite accurate estimation of the information gain with a much smaller data size.
+
+Intuitive steps for GOSS calculation
+1. Sort the instances according to absolute gradients in a descending order
+2. Select the top a * 100% instances. [ Under trained / large gradients ]
+3. Randomly samples b * 100% instances from the rest of the data. This will reduce the contribution of well trained examples by a factor of b ( b < 1 )
+4. Without point 3 count of samples having small gradients would be 1-a ( currently it is b ). In order to maintain the original distribution LightGBM amplifies the contribution of samples having small gradients by a constant (1-a)/b to put more focus on the under-trained instances. This puts more focus on the under trained instances without changing the data distribution by much.
+
+### 3.5 What is EFB(Exclusive Feature Bundling)?<a class="anchor" id="3.5"></a>
+
+Exclusive Feature Bundling, or EFB for short, is an approach for bundling sparse (mostly zero) mutually exclusive features, such as categorical variable inputs that have been one-hot encoded. As such, it is a type of automatic feature selection.
+
+Remember histogram building takes O(#data * #feature). If we are able to down sample the #feature we will speed up tree learning. LightGBM achieves this by bundling features together. We generally work with high dimensionality data. Such data have many features which are mutually exclusive i.e they never take zero values simultaneously. LightGBM safely identifies such features and bundles them into a single feature to reduce the complexity to O(#data * #bundle) where #bundle << #feature.
+
+Part 1 of EFB : Identifying features that could be bundled together
+
+Intuitive explanation for creating feature bundles
+
+Construct a graph with weighted (measure of conflict between features) edges. Conflict is measure of the fraction of exclusive features which have overlapping non zero values.
+Sort the features by count of non zero instances in descending order.
+Loop over the ordered list of features and assign the feature to an existing bundle (if conflict < threshold) or create a new bundle (if conflict > threshold).
+
+#### Algorithm for merging features
+
+We will try to understand the intuition behind merging features by an example. But before that let’s answer the following questions :
+
+#### What is EFB achieving?
+
+EFB is merging the features to reduce the training complexity. In order to keep the merge reversible we will keep exclusive features reside in different bins.
+
+#### Example of the merge
+
+In the example below you can see that feature1 and feature2 are mutually exclusive. In order to achieve non overlapping buckets we add bundle size of feature1 to feature2. This makes sure that non zero data points of bundled features ( feature1 and feature2 ) reside in different buckets. In feature_bundle buckets 1 to 4 contains non zero instances of feature1 and buckets 5,6 contain non zero instances of feature2.
+
+![image](https://user-images.githubusercontent.com/99672298/180641900-3ed03585-a526-4582-aded-ae616c0ce31c.png)
+
+#### Intuitive explanation for merging features
+
++ Calculate the offset to be added to every feature in feature bundle.
++ Iterate over every data instance and feature.
++ Initialise the new bucket as zero for instances where all features are zero.
++ Calculate the new bucket for every non zero instance of a feature by adding respective offset to original bucket of that feature.
+
+### 3.6 Advantages of Light GBM<a class="anchor" id="3.6"></a>
++ **Faster training speed and higher efficiency:** Light GBM use histogram based algorithm i.e it buckets continuous feature values into discrete bins which fasten the training procedure.
++ **Lower memory usage:** Replaces continuous values to discrete bins which result in lower memory usage.
++ **Better accuracy than any other boosting algorithm:** It produces much more complex trees by following leaf wise split approach rather than a level-wise approach which is the main factor in achieving higher accuracy. However, it can sometimes lead to overfitting which can be avoided by setting the max_depth parameter.
+= **Compatibility with Large Datasets:** It is capable of performing equally good with large datasets with a significant reduction in training time as compared to XGBOOST.
++ **Parallel learning supported.**
+
+### 3.7 Performance comparison<a class="anchor" id="3.7"></a>
+![image](https://user-images.githubusercontent.com/99672298/180640529-704578c6-ac98-485d-ba89-10131bdd9d81.png)
+
+There has been only a slight increase in accuracy and auc score by applying Light GBM over XGBOOST but there is a significant difference in the execution time for the training procedure. Light GBM is almost 7 times faster than XGBOOST and is a much better approach when dealing with large datasets.
+
+This turns out to be a huge advantage when you are working on large datasets in limited time competitions.
+
+### 3.8 Tuning Parameters of Light GBM<a class="anchor" id="3.8"></a>
+Light GBM uses leaf wise splitting over depth-wise splitting which enables it to converge much faster but also leads to overfitting. So here is a quick guide to tune the parameters in Light GBM.
+
+**For best fit**
++ **num_leaves :** This parameter is used to set the number of leaves to be formed in a tree. Theoretically relation between num_leaves and max_depth is num_leaves= 2^(max_depth). However, this is not a good estimate in case of Light GBM since splitting takes place leaf wise rather than depth wise. Hence num_leaves set must be smaller than 2^(max_depth) otherwise it may lead to overfitting. Light GBM does not have a direct relation between num_leaves and max_depth and hence the two must not be linked with each other.
++ **min_data_in_leaf :** It is also one of the important parameters in dealing with overfitting. Setting its value smaller may cause overfitting and hence must be set accordingly. Its value should be hundreds to thousands of large datasets.
++ **max_depth:** It specifies the maximum depth or level up to which tree can grow.
+ 
+
+**For faster speed**
++ **bagging_fraction **: Is used to perform bagging for faster results
++ **feature_fraction :** Set fraction of the features to be used at each iteration
++ **max_bin :** Smaller value of max_bin can save much time as it buckets the feature values in discrete bins which is computationally inexpensive.
+ 
+
+**For better accuracy**
++ **Use bigger training data**
++ **num_leaves :** Setting it to high value produces deeper trees with increased accuracy but lead to overfitting. Hence its higher value is not preferred.
++ **max_bin :** Setting it to high values has similar effect as caused by increasing value of num_leaves and also slower our training procedure.
+
