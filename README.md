@@ -542,34 +542,50 @@ StatQuest with Josh Starmer gives a a good simplified summary for quick referenc
 a. General Parameters
 Following are the General parameters used in Xgboost Algorithm:
 
-+ booster: The default value is GBtree. You need to specify the booster to use: GBtree (tree-based) or GBlinear (linear function).
-num_pbuffer: This is set automatically by XGBoost Algorithm, no need to be set by a user. Read the documentation of XGBoost for more details.
-num_feature: This is set automatically by XGBoost Algorithm, no need to be set by a user.
++ **booster:** The default value is GBtree. You need to specify the booster to use: GBtree (tree-based) or GBlinear (linear function).
++ **num_pbuffer:** This is set automatically by XGBoost Algorithm, no need to be set by a user. Read the documentation of XGBoost for more details.
++ num_feature:** This is set automatically by XGBoost Algorithm, no need to be set by a user.
 
 b. Booster Parameters
 Below we discussed tree-specific parameters in Xgboost Algorithm:
 
-+ eta: The default value is set to 0.3. You need to specify step size shrinkage used in an update to prevents overfitting. After each boosting step, we can directly get the weights of new features. eta actually shrinks the feature weights to make the boosting process more conservative. The range is 0 to 1. Low eta value means the model is more robust to overfitting.
-+ gamma: The default value is set to 0. You need to specify the minimum loss reduction required to make a further partition on a leaf node of the tree. The larger, the more conservative the algorithm will be. The range is 0 to ∞. The larger the gamma more conservative the algorithm is.
-+ max_depth: The default value is set to 6. You need to specify the maximum depth of a tree. The range is 1 to ∞.
-+ min_child_weight: The default value is set to 1. You need to specify the minimum sum of instance weight(hessian) needed in a child. If the tree partition step results in a leaf node. Then with the sum of instance weight less than min_child_weight. Then the building process will give up further partitioning. In linear regression mode, corresponds to a minimum number of instances needed to be in each node. The larger, the more conservative the algorithm will be. The range is 0 to ∞.
-+ max_delta_step: The default value is set to 0. Maximum delta step we allow each tree’s weight estimation to be. If the value is set to 0, it means there is no constraint. If it is set to a positive value, it can help make the update step more conservative. Usually, this parameter is not needed, but it might help in logistic regression. Especially, when a class is extremely imbalanced. Set it to a value of 1–10 might help control the update. The range is 0 to ∞.
-+ subsample: The default value is set to 1. You need to specify the subsample ratio of the training instance. Setting it to 0.5 means that XGBoost randomly collected half of the data instances. That needs to grow trees and this will prevent overfitting. The range is 0 to 1.
++ **eta:** The default value is set to 0.3. You need to specify step size shrinkage used in an update to prevents overfitting. After each boosting step, we can directly get the weights of new features. eta actually shrinks the feature weights to make the boosting process more conservative. The range is 0 to 1. Low eta value means the model is more robust to overfitting.
++ **gamma:** The default value is set to 0. You need to specify the minimum loss reduction required to make a further partition on a leaf node of the tree. The larger, the more conservative the algorithm will be. The range is 0 to ∞. The larger the gamma more conservative the algorithm is.
++ **max_depth:** The default value is set to 6. You need to specify the maximum depth of a tree. The range is 1 to ∞.
++ **min_child_weight:** The default value is set to 1. You need to specify the minimum sum of instance weight(hessian) needed in a child. If the tree partition step results in a leaf node. Then with the sum of instance weight less than min_child_weight. Then the building process will give up further partitioning. In linear regression mode, corresponds to a minimum number of instances needed to be in each node. The larger, the more conservative the algorithm will be. The range is 0 to ∞.
++ **max_delta_step:** The default value is set to 0. Maximum delta step we allow each tree’s weight estimation to be. If the value is set to 0, it means there is no constraint. If it is set to a positive value, it can help make the update step more conservative. Usually, this parameter is not needed, but it might help in logistic regression. Especially, when a class is extremely imbalanced. Set it to a value of 1–10 might help control the update. The range is 0 to ∞.
++ **subsample:** The default value is set to 1. You need to specify the subsample ratio of the training instance. Setting it to 0.5 means that XGBoost randomly collected half of the data instances. That needs to grow trees and this will prevent overfitting. The range is 0 to 1.
 colsample_bytree: The default value is set to 1. You need to specify the subsample ratio of columns when constructing each tree. The range is 0 to 1.
 
 c. Linear Booster Specific Parameters
 These are Linear Booster Specific Parameters in XGBoost Algorithm.
 
-+ lambda and alpha: These are regularization terms on weights. Lambda default value assumed is 1 and alpha is 0.
-+ lambda_bias: L2 regularization term on bias and has a default value of 0.
++ **lambda and alpha:** These are regularization terms on weights. Lambda default value assumed is 1 and alpha is 0.
++ **lambda_bias:** L2 regularization term on bias and has a default value of 0.
 
 d. Learning Task Parameters
 Following are the Learning Task Parameters in XGBoost Algorithm
 
-+ base_score: The default value is set to 0.5. You need to specify the initial prediction score of all instances, global bias.
-+ objective: The default value is set to reg: linear. You need to specify the type of learner you want. That includes linear regression, Poisson regression, etc.
-+ eval_metric: You need to specify the evaluation metrics for validation data. And a default metric will be assigned according to the objective.
-+ seed: As always here you specify the seed to reproduce the same set of outputs.
++ **base_score:** The default value is set to 0.5. You need to specify the initial prediction score of all instances, global bias.
++ **objective:** The default value is set to reg: linear. You need to specify the type of learner you want. That includes linear regression, Poisson regression, etc.
++ **eval_metric:** You need to specify the evaluation metrics for validation data. And a default metric will be assigned according to the objective.
++ **seed:** As always here you specify the seed to reproduce the same set of outputs.
+
+_______________________________________________________________________________________________________________________________________________________________
 
 [Table of Content](#0.1)
-_______________________________________________________________________________________________________________________________________________________________
+## 3 Light Gradient Boosting Machine<a class="anchor" id="3"></a>
+
+LightGBM is able to handle huge amounts of data with ease. But keep in mind that this algorithm does not perform well with a small number of data points.
+
+Let’s take a moment to understand why that’s the case.
+
+The trees in LightGBM have a leaf-wise growth, rather than a level-wise growth. After the first split, the next split is done only on the leaf node that has a higher delta loss.
+
+Consider the example I’ve illustrated in the below image:
+
+![image](https://user-images.githubusercontent.com/99672298/180636740-9397eccd-31ec-4ef4-b321-867284a25805.png)
+
+After the first split, the left node had a higher loss and is selected for the next split. Now, we have three leaf nodes, and the middle leaf node had the highest loss. The leaf-wise split of the LightGBM algorithm enables it to work with large datasets.
+
+In order to speed up the training process, `LightGBM uses a histogram-based method for selecting the best split`. For any continuous variable, instead of using the individual values, these are divided into bins or buckets. This makes the training process faster and lowers memory usage.
