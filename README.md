@@ -18,7 +18,7 @@
     - 3.1 [What are split points?](#3.1)
     - 3.2 [How are the optimum split points created?](#3.2)
     - 3.3 [Structural Differences](#3.3)
-    - 3.4 [What is GOSS?](#3.4)
+    - 3.4 [What is Gradient-based One-Side Sampling (GOSS)?](#3.4)
     - 3.5 [What is EFB(Exclusive Feature Bundling)?](#3.1)
     - 3.6 [Advantages of Light GBM](#3.6)
     - 3.7 [Performance comparison](#3.7)
