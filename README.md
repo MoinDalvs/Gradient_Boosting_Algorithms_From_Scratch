@@ -7,36 +7,15 @@
     - 1.5 [Maths Intuition (Regression)](#1.5)
     - 1.6 [Maths Intuition (Classification)](#1.6)
 2. [XGBM (Extreme Gradient Boosting Machine)](#2)
-    - 2.1 [Missing Values](#2.1)
-3. [Exploratory Data Analysis](#3)
-    - 3.1 [Outlier Detection](#3.1)
-4. [Data Visualization](#4)
-5. [Data Pre-processing](#5)
-    - 5.1 [Standardizing the Data](#5.1)
-    - 5.2 [Normalizing the Data](#5.2)
-6. [KMeans Clustering](#6)
-    - 6.1 [Elbow Method for Determining Cluster Amount on Standard Scaled Data](#6.1)
-    - 6.2 [Silhoutte Score](#6.2)
-    - 6.3 [Build KMeans Cluster algorithm using K=6 and Standard Scaler Applied Dataset](#6.3)
-    - 6.4 [Elbow Method and Silhouette Score on MinMaxScaler Applied Data](#6.4)
-    - 6.5 [Build KMeans Cluster algorithm using K=4 and MinMaxScaler Applied Dataset](#6.5)
-    - 6.6 [t-SNE Visualization](#6.6)
-    - 6.6 [UMAP Visualization](#6.6)
-7. [Hierarchical Clustering Algorithm](#7)
-    - 7.1 [Dendogram on MinMaxScaler Applied on Dataset](#7.1)
-    - 7.2 [Dendrogram on Standard Scaler Applied on Data](#7.2)
-    - 7.3 [PCA](#7.3)
-        - 7.3A [Running PCA of Standardized data](#7.3A)
-        - 7.3B [Silhouette Score method for PCA Standard Scaled Data](#7.3B)
-        - 7.3C [Run Hierarchical Clustering.(Agglomerative Clustering) on Standard Scaled Data](#7.3C)
-        - 7.3D [Running PCA of Normalized data](#7.3D)
-        - 7.3E [Silhouette Score method for PCA MinMax Scaled Data](#7.3E)
-        - 7.3F [Run Hierarchical Clustering.(Agglomerative Clustering) on MinMax Scaled Data](#7.3F)
-8. [DBSCAN - (Density Based Spatial Clustering of Applications with Noise)](#8)
-    - 8.1 [DBSCAN of Standard Scaled Data](#8.1)
-    - 8.2 [DBSCAN of MinMax Scaled Data](#8.2)
-9. [Conclusion](#9)
-
+    - 2.1 [XGBoost Features](#2.1)
+    - 2.2 [XGBM Optimizations](#2.2)
+    - 2.3 [System Features](#2.3)
+    - 2.4 [Algorithm Features](#2.4)
+    - 2.5 [Weak Learner Tree Splitting](#2.5)
+    - 2.6 [XGBoost Training Features](#2.6)
+    - 2.7 [XGBoost Algorithm — Parameters](#2.7)
+3. [LightGBM](#3)
+4. [CatBoost](#4)
 
 ## 1) Quick Introduction to Boosting (What is Boosting?)<a class="anchor" id="1"></a>
 ### Picture this scenario:
@@ -218,142 +197,6 @@ The output for the new tree is then added to the output of the existing sequence
 
 A fixed number of trees are added or training stops once loss reaches an acceptable level or no longer improves on an external validation dataset.
 
-[Table of Content](#0.1)
-## 2. Extreme Gradient Boosting Machine (XGBM)<a class="anchor" id="2"></a>
-
-![image](https://user-images.githubusercontent.com/99672298/180611820-2137c89b-1484-418d-bde8-7818814751a2.png)
-
-XGBoost is an extension to gradient boosted decision trees (GBM) and specially designed to improve speed and performance. In fact, XGBoost is simply an improvised version of the GBM algorithm! The working procedure of XGBoost is the same as GBM. `Regularized Learning`, `Gradient Tree Boosting` and `Shrinkage and Column Subsampling`. The trees in XGBoost are built sequentially, trying to correct the errors of the previous trees. It is an implementation of Gradient Boosting machines which exploits various optimizations to train powerful predictive models very quickly.
-
-### XGBoost Features
-+ **Regularized Learning:** The regularization term helps to smooth the final learned weights to avoid over-fitting. The regularized objective will tend to select a model employing simple and predictive functions.
-Gradient Tree Boosting: The tree ensemble model cannot be optimized using traditional optimization methods in Euclidean space. Instead, the model is trained in an additive manner.
-+ **Shrinkage and Column Subsampling:** Besides the regularized objective, two additional techniques are used to further prevent overfitting. The first technique is shrinkage introduced by Friedman. Shrinkage scales newly added weights by a factor η after each step of tree boosting. Similar to a learning rate in stochastic optimization, shrinkage reduces the influence of each tree and leaves space for future trees to improve the model.
-+ The second technique is the column (feature) subsampling.
-+ **Column and Row Subsampling** — To reduce training time, XGBoost provides the option of training every tree with only a randomly sampled subset of the original data rows where the size of this subset is determined by the user. The same applies to the columns/features of the dataset. Apart from savings in training time, subsampling the columns during training has the effect of decorrelating the trees which can reduce overfitting and boost model performance. This technique is used in Random Forest. Column sub-sampling prevents over-fitting even more so than the traditional row sub-sampling. The usage of column sub-samples also speeds up computations of the parallel algorithm.
-
-#### But there are certain features that make XGBoost slightly better than GBM:
-
-+ One of the most important points is that XGBM implements parallel preprocessing (at the node level) which makes it faster than GBM and that means using Parallel learning to split up the dataset so that multiple computers can work on it at the same time.
-+ XGBoost also includes a variety of regularization techniques that reduce overfitting and improve overall performance. You can select the regularization technique by setting the hyperparameters of the XGBoost algorithm
-+ Additionally, if you are using the XGBM algorithm, you don’t have to worry about imputing missing values in your dataset. The XGBM model can handle the missing values on its own. During the training process, the model learns whether missing values should be in the right or left node.
-
-#### In other words, the first three parts give us a conceptual idea of How XGBoost is fit to training data and how it makes predictions
-and the other parts we are going to discuss are going to describe optimization techniques for large datasets
-![22 07 2022_16 05 44_REC](https://user-images.githubusercontent.com/99672298/180612232-b6f1e813-5f3e-4632-b3ad-c055d0e0b137.png)
-
-### XGBM Optimizations:
-+ **Exact Greedy Algorithm:** The main problem in tree learning is to find the best split. This algorithm enumerates all the possible splits on all the features. It is computationally demanding to enumerate all the possible splits for continuous features.
-+ **Approximate Algorithm:** The exact greedy algorithm is very powerful since it enumerates overall possible splitting points greedily. However, it is impossible to efficiently do so when the data does not fit entirely into memory. Approximate Algorithm proposes candidate splitting points according to percentiles of feature distribution. The algorithm then maps the continuous features into buckets split by these candidate points, aggregates the statistics, and finds the best solution among proposals based on the aggregated statistics. So when we have huge training dataset, XGBoost uses an Approximate Greedy Algorithm.
-+ **Weighted Quantile Sketch:** Weighted Quantile Sketch merges the data into an approximate histogram for finding approximate best split — Before finding the best split, we form a histogram for each feature. The boundaries of the histogram bins are then used as candidate points for finding the best split. In the Weighted Quantile Sketch, the data points are assigned weights based on the “confidence” of their current predictions and the histograms are built such that each bin has approximately the same total weight (as opposed to the same number of points in the traditional quantile sketch). As a result, more candidate points and thus, a more detailed search will exist in areas where the model is doing poorly. One important step in the approximate algorithm is to propose candidate split points. XGBoost has a distributed weighted quantile sketch algorithm to effectively handle weighted data.
-+ **Parallelization for faster tree building process** — When finding optimal splits, the trying of candidate points can be parallelized at the feature/column level. For example, core 1 can be finding the best split point and its corresponding loss for feature A while core 2 can be doing the same for feature B. In the end, we compare the losses and use the best one as the split point.
-+ **Sparsity-aware Split Finding:** In many real-world problems, it is quite common for the input x to be sparse. There are multiple possible causes for sparsity:
-Presence of missing values in the data
-Frequent zero entries in the statistics
-Artifacts of feature engineering such as one-hot encoding
-The default direction is chosen based on which reduces the Loss more. On top of this, XGBoost ensures that sparse data are not iterated over during the split finding process, preventing unnecessary computation.
-It is important to make the algorithm aware of the sparsity pattern in the data. XGBoost handles all sparsity patterns in a unified way.
-+ **Hardware Optimizations** — XGBoost stores the frequently used gs and hs in the cache to minimize data access costs. When disk usage is required (due to data not fitting into memory), the data is compressed before storage, reducing the IO cost involved at the expense of some compression computation. If multiple disks exist, the data can be sharded to increase disk reading throughput.
-
-### System Features
-The library provides a system for use in a range of computing environments, not least:
-
-+ **Parallelization:** Parallelization of tree construction using all of your CPU cores during training. Collecting statistics for each column can be parallelized, giving us a parallel algorithm for split finding.
-+ **Cache-aware Access:** XGBoost has been designed to make optimal use of hardware. This is done by allocating internal buffers in each thread, where the gradient statistics can be stored.
-+ **Distributed Computing** for training very large models using a cluster of machines.
-+ **Out-of-Core Computing** for very large datasets that don’t fit into memory.
-+ **Cache Optimization** of data structures and algorithm to make the best use of hardware.
-+ **Column Block for Parallel Learning**: The most time-consuming part of tree learning is to get the data into sorted order. In order to reduce the cost of sorting, the data is stored in the column blocks in sorted order in compressed format.
-
-### Algorithm Features
-The implementation of the algorithm was engineered for the efficiency of computing time and memory resources. A design goal was to make the best use of available resources to train the model. Some key algorithm implementation features include:
-
-+ **Sparse Aware implementation** with automatic handling of missing data values.
-+ **Block Structure** to support the parallelization of tree construction.
-+ **Continued Training** so that you can further boost an already fitted model on new data.
-
-### Weak Learner Tree Splitting Criteria
-So far, we got the t-th step object function, next step is to build the t-th tree, and this tree should be constructed to reduce object function value as much as possible.
-
-In order to build a tree to reduce object function value, we only allow node split which can reduce object function value, and looking for a best split which can reduce the most.
-
-So in each split we measure the object function value reduce by Tree Object function value(After Node Split) — (Before Node Split)
-
-![gain](https://user-images.githubusercontent.com/99672298/180615921-900d45fa-5aaf-412c-bbcc-6708ab2759f8.png)
-
-Gain is how much object function value reduced in the split.
-
-${Left}_{Similarity}$ is left splitting child leaf
-
-${Right}_{Similarity}$ is right splitting leaf
-
-${Root}_{Similarity}$ is parent leaf
-
-For simplicity, each leaf can calculate its Similarity Score
-Splitting gain can be expressed as
-
-Left(Similarity Score)+ Right(Similarity Score) - Parent(Similarity Score)
-
-![21 07 2022_15 11 06_REC](https://user-images.githubusercontent.com/99672298/180616098-a0b22e3a-ffd2-4254-834f-bd0833959cf8.png)
-![21 07 2022_15 25 37_REC](https://user-images.githubusercontent.com/99672298/180616124-39cd86dc-442f-41b7-bf18-f0ddd9cd3555.png)
-![21 07 2022_16 15 17_REC](https://user-images.githubusercontent.com/99672298/180617051-8af16b85-3817-44b6-9c9f-8b41c625ecde.png)
-![21 07 2022_15 25 37_REC](https://user-images.githubusercontent.com/99672298/180617218-fa0b9fe1-13c8-4ae1-b93c-e2278a201e33.png)
-![21 07 2022_16 17 02_REC](https://user-images.githubusercontent.com/99672298/180617262-f9ccde6f-0106-47db-8640-42b36c97ae1a.png)
-![21 07 2022_16 17 29_REC](https://user-images.githubusercontent.com/99672298/180617265-fc2db054-f2cb-4913-90ff-f6556a45ba5b.png)
-![21 07 2022_16 17 55_REC](https://user-images.githubusercontent.com/99672298/180617271-f753a548-898b-403b-8adf-c2cad46568b7.png)
-![21 07 2022_19 09 57_REC](https://user-images.githubusercontent.com/99672298/180617307-ad884318-e96f-4db3-bd4f-7f025f67f470.png)
-![21 07 2022_19 21 56_REC](https://user-images.githubusercontent.com/99672298/180617317-83acf7db-8fb8-495e-bfaa-e38f0c45927e.png)
-![19 07 2022_22 19 52_REC](https://user-images.githubusercontent.com/99672298/180617330-cd26bd30-24c1-4095-a446-7a866467c9e6.png)
-![20 07 2022_12 32 54_REC](https://user-images.githubusercontent.com/99672298/180617331-fc0de8c9-d35a-45df-af83-c10c5e6d5b35.png)
-
-#### Simplified Summary For Regression and Classification
-We know calculating tree node similarity and tree leaf output wᵢ will base on the chosen loss function, because gᵢ and hᵢ are 1-order and 2-order derivatives from loss function.
-
-StatQuest with Josh Starmer gives a a good simplified summary for quick reference.
-
-![image](https://user-images.githubusercontent.com/99672298/180617100-c2594a44-25e6-473d-8287-e6f0fd8cc56d.png)
-
-+ Similarity Score is applied for every node in the tree
-+ Output Value normally is for leaf node output(wᵢ)
-
-#### XGBoost Training Features
-+ When searching for best feature value for node split, XGBoost provides an option to search on the feature value’s quantiles or histogram instead of try all the feature values to split node.
-+ When building feature histogram, XGBoost may split feature data into multiple computers to calculate histogram, then merge back to generate a aggregate histogram, this like Hadoop Map-reduce operation, and the generated histogram will be cached for next split.
-+ XGBoost can automatically handle missing values in feature. In tree node split step, XGBoost will either assign all missing value instances to left or right child, depend on which side has larger gain.
-+ XGBoost provide lots hyper-parameters to deal with overfitting
-
-### XGBoost Algorithm — Parameters
-a. General Parameters
-Following are the General parameters used in Xgboost Algorithm:
-
-+ booster: The default value is GBtree. You need to specify the booster to use: GBtree (tree-based) or GBlinear (linear function).
-num_pbuffer: This is set automatically by XGBoost Algorithm, no need to be set by a user. Read the documentation of XGBoost for more details.
-num_feature: This is set automatically by XGBoost Algorithm, no need to be set by a user.
-
-b. Booster Parameters
-Below we discussed tree-specific parameters in Xgboost Algorithm:
-
-+ eta: The default value is set to 0.3. You need to specify step size shrinkage used in an update to prevents overfitting. After each boosting step, we can directly get the weights of new features. eta actually shrinks the feature weights to make the boosting process more conservative. The range is 0 to 1. Low eta value means the model is more robust to overfitting.
-+ gamma: The default value is set to 0. You need to specify the minimum loss reduction required to make a further partition on a leaf node of the tree. The larger, the more conservative the algorithm will be. The range is 0 to ∞. The larger the gamma more conservative the algorithm is.
-+ max_depth: The default value is set to 6. You need to specify the maximum depth of a tree. The range is 1 to ∞.
-+ min_child_weight: The default value is set to 1. You need to specify the minimum sum of instance weight(hessian) needed in a child. If the tree partition step results in a leaf node. Then with the sum of instance weight less than min_child_weight. Then the building process will give up further partitioning. In linear regression mode, corresponds to a minimum number of instances needed to be in each node. The larger, the more conservative the algorithm will be. The range is 0 to ∞.
-+ max_delta_step: The default value is set to 0. Maximum delta step we allow each tree’s weight estimation to be. If the value is set to 0, it means there is no constraint. If it is set to a positive value, it can help make the update step more conservative. Usually, this parameter is not needed, but it might help in logistic regression. Especially, when a class is extremely imbalanced. Set it to a value of 1–10 might help control the update. The range is 0 to ∞.
-+ subsample: The default value is set to 1. You need to specify the subsample ratio of the training instance. Setting it to 0.5 means that XGBoost randomly collected half of the data instances. That needs to grow trees and this will prevent overfitting. The range is 0 to 1.
-colsample_bytree: The default value is set to 1. You need to specify the subsample ratio of columns when constructing each tree. The range is 0 to 1.
-
-c. Linear Booster Specific Parameters
-These are Linear Booster Specific Parameters in XGBoost Algorithm.
-
-+ lambda and alpha: These are regularization terms on weights. Lambda default value assumed is 1 and alpha is 0.
-+ lambda_bias: L2 regularization term on bias and has a default value of 0.
-
-d. Learning Task Parameters
-Following are the Learning Task Parameters in XGBoost Algorithm
-
-+ base_score: The default value is set to 0.5. You need to specify the initial prediction score of all instances, global bias.
-+ objective: The default value is set to reg: linear. You need to specify the type of learner you want. That includes linear regression, Poisson regression, etc.
-+ eval_metric: You need to specify the evaluation metrics for validation data. And a default metric will be assigned according to the objective.
-+ seed: As always here you specify the seed to reproduce the same set of outputs.
 
 [Table of Content](#0.1)
 ## Maths Intuition
@@ -590,5 +433,143 @@ Now when we have our first decision tree, we find the final output of the leaves
 
 Finally, we are ready to get new predictions by adding our base model with the new tree we made on residuals.
 _______________________________________________________________________________________________________________________________________________________________
-[Table of Content](#0.1)
 
+[Table of Content](#0.1)
+## 2. Extreme Gradient Boosting Machine (XGBM)<a class="anchor" id="2"></a>
+
+![image](https://user-images.githubusercontent.com/99672298/180611820-2137c89b-1484-418d-bde8-7818814751a2.png)
+
+XGBoost is an extension to gradient boosted decision trees (GBM) and specially designed to improve speed and performance. In fact, XGBoost is simply an improvised version of the GBM algorithm! The working procedure of XGBoost is the same as GBM. `Regularized Learning`, `Gradient Tree Boosting` and `Shrinkage and Column Subsampling`. The trees in XGBoost are built sequentially, trying to correct the errors of the previous trees. It is an implementation of Gradient Boosting machines which exploits various optimizations to train powerful predictive models very quickly.
+
+### 2.1 XGBoost Features<a class="anchor" id="2.1"></a>
++ **Regularized Learning:** The regularization term helps to smooth the final learned weights to avoid over-fitting. The regularized objective will tend to select a model employing simple and predictive functions.
+Gradient Tree Boosting: The tree ensemble model cannot be optimized using traditional optimization methods in Euclidean space. Instead, the model is trained in an additive manner.
++ **Shrinkage and Column Subsampling:** Besides the regularized objective, two additional techniques are used to further prevent overfitting. The first technique is shrinkage introduced by Friedman. Shrinkage scales newly added weights by a factor η after each step of tree boosting. Similar to a learning rate in stochastic optimization, shrinkage reduces the influence of each tree and leaves space for future trees to improve the model.
++ The second technique is the column (feature) subsampling.
++ **Column and Row Subsampling** — To reduce training time, XGBoost provides the option of training every tree with only a randomly sampled subset of the original data rows where the size of this subset is determined by the user. The same applies to the columns/features of the dataset. Apart from savings in training time, subsampling the columns during training has the effect of decorrelating the trees which can reduce overfitting and boost model performance. This technique is used in Random Forest. Column sub-sampling prevents over-fitting even more so than the traditional row sub-sampling. The usage of column sub-samples also speeds up computations of the parallel algorithm.
+
+#### But there are certain features that make XGBoost slightly better than GBM:
+
++ One of the most important points is that XGBM implements parallel preprocessing (at the node level) which makes it faster than GBM and that means using Parallel learning to split up the dataset so that multiple computers can work on it at the same time.
++ XGBoost also includes a variety of regularization techniques that reduce overfitting and improve overall performance. You can select the regularization technique by setting the hyperparameters of the XGBoost algorithm
++ Additionally, if you are using the XGBM algorithm, you don’t have to worry about imputing missing values in your dataset. The XGBM model can handle the missing values on its own. During the training process, the model learns whether missing values should be in the right or left node.
+
+#### In other words, the first three parts give us a conceptual idea of How XGBoost is fit to training data and how it makes predictions
+and the other parts we are going to discuss are going to describe optimization techniques for large datasets
+![22 07 2022_16 05 44_REC](https://user-images.githubusercontent.com/99672298/180612232-b6f1e813-5f3e-4632-b3ad-c055d0e0b137.png)
+
+### 2.2 XGBM Optimizations:<a class="anchor" id="2.2"></a>
++ **Exact Greedy Algorithm:** The main problem in tree learning is to find the best split. This algorithm enumerates all the possible splits on all the features. It is computationally demanding to enumerate all the possible splits for continuous features.
++ **Approximate Algorithm:** The exact greedy algorithm is very powerful since it enumerates overall possible splitting points greedily. However, it is impossible to efficiently do so when the data does not fit entirely into memory. Approximate Algorithm proposes candidate splitting points according to percentiles of feature distribution. The algorithm then maps the continuous features into buckets split by these candidate points, aggregates the statistics, and finds the best solution among proposals based on the aggregated statistics. So when we have huge training dataset, XGBoost uses an Approximate Greedy Algorithm.
++ **Weighted Quantile Sketch:** Weighted Quantile Sketch merges the data into an approximate histogram for finding approximate best split — Before finding the best split, we form a histogram for each feature. The boundaries of the histogram bins are then used as candidate points for finding the best split. In the Weighted Quantile Sketch, the data points are assigned weights based on the “confidence” of their current predictions and the histograms are built such that each bin has approximately the same total weight (as opposed to the same number of points in the traditional quantile sketch). As a result, more candidate points and thus, a more detailed search will exist in areas where the model is doing poorly. One important step in the approximate algorithm is to propose candidate split points. XGBoost has a distributed weighted quantile sketch algorithm to effectively handle weighted data.
++ **Parallelization for faster tree building process** — When finding optimal splits, the trying of candidate points can be parallelized at the feature/column level. For example, core 1 can be finding the best split point and its corresponding loss for feature A while core 2 can be doing the same for feature B. In the end, we compare the losses and use the best one as the split point.
++ **Sparsity-aware Split Finding:** In many real-world problems, it is quite common for the input x to be sparse. There are multiple possible causes for sparsity:
+Presence of missing values in the data
+Frequent zero entries in the statistics
+Artifacts of feature engineering such as one-hot encoding
+The default direction is chosen based on which reduces the Loss more. On top of this, XGBoost ensures that sparse data are not iterated over during the split finding process, preventing unnecessary computation.
+It is important to make the algorithm aware of the sparsity pattern in the data. XGBoost handles all sparsity patterns in a unified way.
++ **Hardware Optimizations** — XGBoost stores the frequently used gs and hs in the cache to minimize data access costs. When disk usage is required (due to data not fitting into memory), the data is compressed before storage, reducing the IO cost involved at the expense of some compression computation. If multiple disks exist, the data can be sharded to increase disk reading throughput.
+
+### 2.3 System Features<a class="anchor" id="2.3"></a>
+The library provides a system for use in a range of computing environments, not least:
+
++ **Parallelization:** Parallelization of tree construction using all of your CPU cores during training. Collecting statistics for each column can be parallelized, giving us a parallel algorithm for split finding.
++ **Cache-aware Access:** XGBoost has been designed to make optimal use of hardware. This is done by allocating internal buffers in each thread, where the gradient statistics can be stored.
++ **Distributed Computing** for training very large models using a cluster of machines.
++ **Out-of-Core Computing** for very large datasets that don’t fit into memory.
++ **Cache Optimization** of data structures and algorithm to make the best use of hardware.
++ **Column Block for Parallel Learning**: The most time-consuming part of tree learning is to get the data into sorted order. In order to reduce the cost of sorting, the data is stored in the column blocks in sorted order in compressed format.
+
+### 2.4 Algorithm Features<a class="anchor" id="2.4"></a>
+The implementation of the algorithm was engineered for the efficiency of computing time and memory resources. A design goal was to make the best use of available resources to train the model. Some key algorithm implementation features include:
+
++ **Sparse Aware implementation** with automatic handling of missing data values.
++ **Block Structure** to support the parallelization of tree construction.
++ **Continued Training** so that you can further boost an already fitted model on new data.
+
+### 2.5 Weak Learner Tree Splitting<a class="anchor" id="2.5"></a>
+So far, we got the t-th step object function, next step is to build the t-th tree, and this tree should be constructed to reduce object function value as much as possible.
+
+In order to build a tree to reduce object function value, we only allow node split which can reduce object function value, and looking for a best split which can reduce the most.
+
+So in each split we measure the object function value reduce by Tree Object function value(After Node Split) — (Before Node Split)
+
+![gain](https://user-images.githubusercontent.com/99672298/180615921-900d45fa-5aaf-412c-bbcc-6708ab2759f8.png)
+
+Gain is how much object function value reduced in the split.
+
+${Left}_{Similarity}$ is left splitting child leaf
+
+${Right}_{Similarity}$ is right splitting leaf
+
+${Root}_{Similarity}$ is parent leaf
+
+For simplicity, each leaf can calculate its Similarity Score
+Splitting gain can be expressed as
+
+Left(Similarity Score)+ Right(Similarity Score) - Parent(Similarity Score)
+
+![21 07 2022_15 11 06_REC](https://user-images.githubusercontent.com/99672298/180616098-a0b22e3a-ffd2-4254-834f-bd0833959cf8.png)
+![21 07 2022_15 25 37_REC](https://user-images.githubusercontent.com/99672298/180616124-39cd86dc-442f-41b7-bf18-f0ddd9cd3555.png)
+![21 07 2022_16 15 17_REC](https://user-images.githubusercontent.com/99672298/180617051-8af16b85-3817-44b6-9c9f-8b41c625ecde.png)
+![21 07 2022_15 25 37_REC](https://user-images.githubusercontent.com/99672298/180617218-fa0b9fe1-13c8-4ae1-b93c-e2278a201e33.png)
+![21 07 2022_16 17 02_REC](https://user-images.githubusercontent.com/99672298/180617262-f9ccde6f-0106-47db-8640-42b36c97ae1a.png)
+![21 07 2022_16 17 29_REC](https://user-images.githubusercontent.com/99672298/180617265-fc2db054-f2cb-4913-90ff-f6556a45ba5b.png)
+![21 07 2022_16 17 55_REC](https://user-images.githubusercontent.com/99672298/180617271-f753a548-898b-403b-8adf-c2cad46568b7.png)
+![21 07 2022_19 09 57_REC](https://user-images.githubusercontent.com/99672298/180617307-ad884318-e96f-4db3-bd4f-7f025f67f470.png)
+![21 07 2022_19 21 56_REC](https://user-images.githubusercontent.com/99672298/180617317-83acf7db-8fb8-495e-bfaa-e38f0c45927e.png)
+![19 07 2022_22 19 52_REC](https://user-images.githubusercontent.com/99672298/180617330-cd26bd30-24c1-4095-a446-7a866467c9e6.png)
+![20 07 2022_12 32 54_REC](https://user-images.githubusercontent.com/99672298/180617331-fc0de8c9-d35a-45df-af83-c10c5e6d5b35.png)
+
+#### Simplified Summary For Regression and Classification
+We know calculating tree node similarity and tree leaf output wᵢ will base on the chosen loss function, because gᵢ and hᵢ are 1-order and 2-order derivatives from loss function.
+
+StatQuest with Josh Starmer gives a a good simplified summary for quick reference.
+
+![image](https://user-images.githubusercontent.com/99672298/180617100-c2594a44-25e6-473d-8287-e6f0fd8cc56d.png)
+
++ Similarity Score is applied for every node in the tree
++ Output Value normally is for leaf node output(wᵢ)
+
+### 2.6 XGBoost Training Features<a class="anchor" id="2.6"></a>
++ When searching for best feature value for node split, XGBoost provides an option to search on the feature value’s quantiles or histogram instead of try all the feature values to split node.
++ When building feature histogram, XGBoost may split feature data into multiple computers to calculate histogram, then merge back to generate a aggregate histogram, this like Hadoop Map-reduce operation, and the generated histogram will be cached for next split.
++ XGBoost can automatically handle missing values in feature. In tree node split step, XGBoost will either assign all missing value instances to left or right child, depend on which side has larger gain.
++ XGBoost provide lots hyper-parameters to deal with overfitting
+
+### 2.7 XGBoost Algorithm — Parameters<a class="anchor" id="2.7"></a>
+a. General Parameters
+Following are the General parameters used in Xgboost Algorithm:
+
++ booster: The default value is GBtree. You need to specify the booster to use: GBtree (tree-based) or GBlinear (linear function).
+num_pbuffer: This is set automatically by XGBoost Algorithm, no need to be set by a user. Read the documentation of XGBoost for more details.
+num_feature: This is set automatically by XGBoost Algorithm, no need to be set by a user.
+
+b. Booster Parameters
+Below we discussed tree-specific parameters in Xgboost Algorithm:
+
++ eta: The default value is set to 0.3. You need to specify step size shrinkage used in an update to prevents overfitting. After each boosting step, we can directly get the weights of new features. eta actually shrinks the feature weights to make the boosting process more conservative. The range is 0 to 1. Low eta value means the model is more robust to overfitting.
++ gamma: The default value is set to 0. You need to specify the minimum loss reduction required to make a further partition on a leaf node of the tree. The larger, the more conservative the algorithm will be. The range is 0 to ∞. The larger the gamma more conservative the algorithm is.
++ max_depth: The default value is set to 6. You need to specify the maximum depth of a tree. The range is 1 to ∞.
++ min_child_weight: The default value is set to 1. You need to specify the minimum sum of instance weight(hessian) needed in a child. If the tree partition step results in a leaf node. Then with the sum of instance weight less than min_child_weight. Then the building process will give up further partitioning. In linear regression mode, corresponds to a minimum number of instances needed to be in each node. The larger, the more conservative the algorithm will be. The range is 0 to ∞.
++ max_delta_step: The default value is set to 0. Maximum delta step we allow each tree’s weight estimation to be. If the value is set to 0, it means there is no constraint. If it is set to a positive value, it can help make the update step more conservative. Usually, this parameter is not needed, but it might help in logistic regression. Especially, when a class is extremely imbalanced. Set it to a value of 1–10 might help control the update. The range is 0 to ∞.
++ subsample: The default value is set to 1. You need to specify the subsample ratio of the training instance. Setting it to 0.5 means that XGBoost randomly collected half of the data instances. That needs to grow trees and this will prevent overfitting. The range is 0 to 1.
+colsample_bytree: The default value is set to 1. You need to specify the subsample ratio of columns when constructing each tree. The range is 0 to 1.
+
+c. Linear Booster Specific Parameters
+These are Linear Booster Specific Parameters in XGBoost Algorithm.
+
++ lambda and alpha: These are regularization terms on weights. Lambda default value assumed is 1 and alpha is 0.
++ lambda_bias: L2 regularization term on bias and has a default value of 0.
+
+d. Learning Task Parameters
+Following are the Learning Task Parameters in XGBoost Algorithm
+
++ base_score: The default value is set to 0.5. You need to specify the initial prediction score of all instances, global bias.
++ objective: The default value is set to reg: linear. You need to specify the type of learner you want. That includes linear regression, Poisson regression, etc.
++ eval_metric: You need to specify the evaluation metrics for validation data. And a default metric will be assigned according to the objective.
++ seed: As always here you specify the seed to reproduce the same set of outputs.
+
+[Table of Content](#0.1)
+_______________________________________________________________________________________________________________________________________________________________
