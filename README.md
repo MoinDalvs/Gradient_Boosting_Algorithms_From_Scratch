@@ -24,6 +24,8 @@
     - 3.7 [Performance comparison](#3.7)
     - 3.8 [Tuning Parameters of Light GBM](#3.8)
 4. [CatBoost](#4)
+    - 4.1 [Compared computational efficiency](#4.1)
+    - 4.2 [Advantages of CatBoost](#4.2)
 
 ## 1) Quick Introduction to Boosting (What is Boosting?)<a class="anchor" id="1"></a>
 ### Picture this scenario:
@@ -718,7 +720,7 @@ Light GBM uses leaf wise splitting over depth-wise splitting which enables it to
  
 
 **For faster speed**
-+ **bagging_fraction **: Is used to perform bagging for faster results
++ **bagging_fraction**: Is used to perform bagging for faster results
 + **feature_fraction :** Set fraction of the features to be used at each iteration
 + **max_bin :** Smaller value of max_bin can save much time as it buckets the feature values in discrete bins which is computationally inexpensive.
  
@@ -728,3 +730,44 @@ Light GBM uses leaf wise splitting over depth-wise splitting which enables it to
 + **num_leaves :** Setting it to high value produces deeper trees with increased accuracy but lead to overfitting. Hence its higher value is not preferred.
 + **max_bin :** Setting it to high values has similar effect as caused by increasing value of num_leaves and also slower our training procedure.
 
+_______________________________________________________________________________________________________________________________________________________________
+
+[Table of Content](#0.1)
+## 4. CatBoost<a class="anchor" id="4"></a>
+
+As the name suggests, CatBoost is a boosting algorithm that can handle categorical variables in the data. Most machine learning algorithms cannot work with strings or categories in the data. Thus, converting categorical variables into numerical values is an essential preprocessing step.
+
+CatBoost can internally handle categorical variables in the data. These variables are transformed to numerical ones using various statistics on combinations of features.
+
+Another reason why CatBoost is being widely used is that it works well with the default set of hyperparameters. Hence, as a user, we do not have to spend a lot of time tuning the hyperparameters.
+
+“CatBoost” name comes from two words “Category” and “Boosting”.As discussed, the library works well with multiple Categories of data, such as audio, text, image including historical data.“Boost” comes from gradient boosting machine learning algorithm as this library is based on gradient boosting library. Gradient boosting is a powerful machine learning algorithm that is widely applied to multiple types of business challenges like fraud detection, recommendation items, forecasting and it performs well also. It can also return very good result with relatively less data, unlike DL models that need to learn from a massive amount of data.
+
+CatBoost builds upon the theory of decision trees and gradient boosting. The main idea of boosting is to sequentially combine many weak models (a model performing slightly better than random chance) and thus through greedy search create a strong competitive predictive model. Because gradient boosting fits the decision trees sequentially, the fitted trees will learn from the mistakes of former trees and hence reduce the errors. This process of adding a new function to existing ones is continued until the selected loss function is no longer minimized.
+
+In the growing procedure of the decision trees, CatBoost does not follow similar gradient boosting models. Instead, CatBoost grows oblivious trees, which means that the trees are grown by imposing the rule that all nodes at the same level, test the same predictor with the same condition, and hence an index of a leaf can be calculated with bitwise operations. The oblivious tree procedure allows for a simple fitting scheme and efficiency on CPUs, while the tree structure operates as a regularization to find an optimal solution and avoid overfitting.
+
+### 4.1 Compared computational efficiency:<a class="anchor" id="4.1"></a>
+
+![image](https://user-images.githubusercontent.com/99672298/180643905-c5459310-0513-41dc-9377-6b4e26fef05b.png)
+
+### 4.2 Advantages of CatBoost Library<a class="anchor" id="4.2"></a>
++ **Performance:** CatBoost provides state of the art results and it is competitive with any leading machine learning algorithm on the performance front.
++ **Handling Categorical features automatically:**  We can use CatBoost without any explicit pre-processing to convert categories into numbers. CatBoost converts categorical values into numbers using various statistics on combinations of categorical features and combinations of categorical and numerical features. You can read more about it here.
++ **Robust:** It reduces the need for extensive hyper-parameter tuning and lower the chances of overfitting also which leads to more generalized models. Although, CatBoost has multiple parameters to tune and it contains parameters like the number of trees, learning rate, regularization, tree depth, fold size, bagging temperature and others. You can read about all these parameters here.
+
+<div style="display:fill;
+            border-radius: false;
+            border-style: solid;
+            border-color:#000000;
+            border-style: false;
+            border-width: 2px;
+            color:#CF673A;
+            font-size:15px;
+            font-family: Georgia;
+            background-color:#E8DCCC;
+            text-align:center;
+            letter-spacing:0.1px;
+            padding: 0.1em;">
+
+**<h2>♡ Thank you for taking the time ♡**
