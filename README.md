@@ -756,6 +756,10 @@ In the growing procedure of the decision trees, CatBoost does not follow similar
 + **Handling Categorical features automatically:**  We can use CatBoost without any explicit pre-processing to convert categories into numbers. CatBoost converts categorical values into numbers using various statistics on combinations of categorical features and combinations of categorical and numerical features. You can read more about it here.
 + **Robust:** It reduces the need for extensive hyper-parameter tuning and lower the chances of overfitting also which leads to more generalized models. Although, CatBoost has multiple parameters to tune and it contains parameters like the number of trees, learning rate, regularization, tree depth, fold size, bagging temperature and others. You can read about all these parameters here.
 
+_______________________________________________________________________________________________________________________________________________________________
+
+[Table of Content](#0.1)
+
 <div style="display:fill;
             border-radius: false;
             border-style: solid;
